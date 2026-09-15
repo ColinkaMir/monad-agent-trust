@@ -5,6 +5,7 @@ import {
   useDynamicContext,
 } from "@dynamic-labs/sdk-react-core";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { FundAgent } from "./FundAgent";
 import "./app.css";
 
 const API = import.meta.env.VITE_API ?? "http://localhost:8460";
@@ -199,6 +200,7 @@ export default function App() {
           {ENV_ID ? <DynamicWidget /> : <div className="nokey">set VITE_DYNAMIC_ENV_ID to enable sign-in</div>}
         </header>
         <Answer />
+        <FundAgent />
         <Bill />
         <footer>
           Index built with Envio HyperSync over Monad mainnet · wallet signals bought from Nansen

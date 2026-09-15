@@ -73,3 +73,28 @@ pre {
 }
 .bill b { color: var(--ink); font-family: ui-monospace, monospace; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; line-height: 1.6; }
+
+/* кошелёк агента */
+.fund {
+  border: 1px solid var(--line); border-radius: 12px; padding: .9rem 1.1rem;
+  background: rgba(255,255,255,.02); margin-bottom: 1rem;
+}
+.fund-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.fund-head b { font-family: ui-monospace, monospace; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.fund-head .mono { font-family: ui-monospace, monospace; font-size: .78rem; color: var(--muted); }
+.fund-line { color: var(--ink2); font-size: .9rem; margin: .5rem 0 .7rem; }
+.fund-line b { color: var(--ink); }
+.fund-act { display: flex; align-items: center; gap: .5rem; }
+.fund-act input {
+  width: 6rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: .45rem .6rem; color: var(--ink); font: inherit; font-family: ui-monospace, monospace; font-size: .85rem;
+}
+.fund-act .unit { color: var(--muted); font-size: .8rem; margin-right: .4rem; }
+.fund-act button {
+  background: rgba(143,123,248,.16); border: 1px solid rgba(143,123,248,.4); color: var(--ink);
+  border-radius: 8px; padding: .45rem .9rem; font: inherit; font-size: .85rem; cursor: pointer;
+}
+.fund-act button:disabled { opacity: .5; cursor: default; }
+.fund-hint { color: var(--muted); font-size: .82rem; line-height: 1.5; margin-top: .5rem; }
+.fund-hint a { color: var(--accent); }
+.fund-err { color: var(--bad); font-size: .82rem; margin-top: .5rem; }

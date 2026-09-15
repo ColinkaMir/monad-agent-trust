@@ -17,6 +17,10 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const PORT = Number(process.env.PORT ?? 8460);
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;   // a purchased signal is good for six hours
+const RPC = process.env.MONAD_RPC ?? "https://rpc.monad.xyz";
+const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
+// The wallet that pays for x402 calls. Public by nature: every purchase it makes is on chain.
+const AGENT_WALLET = process.env.AGENT_WALLET ?? "0x9E66867adfDC613891A96d82a53988829cD39004";
 const walletCache = new Map();
 
 const load = () =>
@@ -96,7 +100,7 @@ createServer(async (req, res) => {
       about: "Provenance of ERC-8004 reputation on Monad, with wallet signals bought per call over x402.",
       indexedAt: prov.indexedAt ?? null,
       totals: prov.totals,
-      endpoints: ["/agent/:id", "/wallet/:address", "/agents", "/spend"],
+      endpoints: ["/agent/:id", "/wallet/:address", "/agents", "/spend", "/agent-wallet"],
     });
   }
 
@@ -128,6 +132,36 @@ createServer(async (req, res) => {
       purchasedSignal: signal,
       note: "The provenance half is computed from Monad events. The signal half was bought from "
           + "Nansen for the price shown and reconciled on chain.",
+    });
+  }
+
+  // Where the agent's money lives, so the page can show what it is funding and the visitor can
+  // check the balance themselves rather than take our word for it. Read-only: the service never
+  // exposes the key, and the address is the same one that pays for the Nansen calls.
+  if (p === "/agent-wallet") {
+    const call = async (to, data) => {
+      const r = await fetch(RPC, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call",
+                               params: [{ to, data }, "latest"] }),
+      });
+      return (await r.json()).result ?? "0x0";
+    };
+    const balanceOf = "0x70a08231000000000000000000000000" + AGENT_WALLET.slice(2).toLowerCase();
+    const [usdcHex, monRes] = await Promise.all([
+      call(USDC, balanceOf),
+      fetch(RPC, { method: "POST", headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance",
+                                          params: [AGENT_WALLET, "latest"] }) }).then((r) => r.json()),
+    ]);
+    return json(res, 200, {
+      address: AGENT_WALLET,
+      usdc: Number(BigInt(usdcHex || "0x0")) / 1e6,
+      mon: Number(BigInt(monRes.result ?? "0x0")) / 1e18,
+      usdcToken: USDC,
+      chainId: 143,
+      note: "Nansen calls are paid from this address. Top it up and the service can keep answering.",
     });
   }
 
