@@ -18,7 +18,7 @@
 // the first time the owner funded that wallet and the first time that wallet paid the owner —
 // so the flow pass folds into maps as it streams and never holds the history.
 import { HypersyncClient, LogField, TransactionField, BlockField } from "@envio-dev/hypersync-client";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 
 const TOKEN = readFileSync("/home/solana/.envio-token", "utf8").trim();
 const IDENTITY = "0x8004a169fb4a3325136eb29fa0ceb6d2e539a432";
@@ -31,16 +31,33 @@ const T_REGISTERED = "0xca52e62c";
 const T_FEEDBACK = "0x6a4a6174";
 
 const client = new HypersyncClient({ url: "https://monad.hypersync.xyz", apiToken: TOKEN });
+const STORE = "data/indexed.json";
+const FULL = process.argv.includes("--full");
+
+/// Previous run's coverage, so a rerun asks only for what happened since. The free tier allows
+/// 30 requests a minute, which makes a full backfill a minutes-long affair and a catch-up a
+/// couple of requests — the difference between a service that can refresh hourly and one that
+/// cannot.
+function previous() {
+  if (FULL || !existsSync(STORE)) return null;
+  try {
+    const d = JSON.parse(readFileSync(STORE, "utf8"));
+    return typeof d.head === "number" ? d : null;
+  } catch {
+    return null;
+  }
+}
 const addrOf = (topic) => "0x" + topic.slice(-40).toLowerCase();
 const secs = (t0) => ((Date.now() - t0) / 1000).toFixed(1);
 
-async function registryEvents() {
+async function registryEvents(fromBlock) {
   const t0 = Date.now();
   const registrations = [];
   const feedback = [];
   let batches = 0;
+  let head = fromBlock;
   const stream = await client.stream({
-    fromBlock: DEPLOY_BLOCK,
+    fromBlock,
     logs: [{ address: [IDENTITY, REPUTATION] }],
     fieldSelection: {
       log: [LogField.BlockNumber, LogField.Address, LogField.Topic0, LogField.Topic1, LogField.Topic2],
@@ -51,6 +68,7 @@ async function registryEvents() {
     const res = await stream.recv();
     if (res === null) break;
     batches++;
+    if (typeof res.nextBlock === "number") head = res.nextBlock;
     const times = new Map(res.data.blocks.map((b) => [b.number, Number(b.timestamp)]));
     for (const log of res.data.logs) {
       // The client returns topics as an ARRAY, not as topic0/topic1/topic2 fields. Reading the
@@ -68,12 +86,12 @@ async function registryEvents() {
       }
     }
   }
-  return { registrations, feedback, seconds: secs(t0), batches };
+  return { registrations, feedback, seconds: secs(t0), batches, head };
 }
 
 /// Folds the owners' transfer history into first-seen edges, keeping only the pairs that can
 /// change a verdict: owner -> rater (funding) and rater -> owner (payment).
-async function fundingEdges(owners, raters) {
+async function fundingEdges(owners, raters, fromBlock) {
   const t0 = Date.now();
   const funded = new Map();   // `${owner}|${wallet}` -> ts
   const paid = new Map();     // `${wallet}|${owner}` -> ts
@@ -83,7 +101,7 @@ async function fundingEdges(owners, raters) {
   // filter degenerated to match-all, and the free tier's 30 requests a minute did the rest.
   if (owners.size === 0 || raters.size === 0) return { funded: new Map(), paid: new Map(), scanned: 0, seconds: "0.0" };
   const stream = await client.stream({
-    fromBlock: DEPLOY_BLOCK,
+    fromBlock,
     transactions: [{ from: [...owners] }, { to: [...owners] }],
     fieldSelection: {
       transaction: [TransactionField.BlockNumber, TransactionField.From, TransactionField.To,
@@ -116,9 +134,20 @@ async function fundingEdges(owners, raters) {
 
 const main = async () => {
   mkdirSync("data", { recursive: true });
-  console.log(`indexing both ERC-8004 registries from block ${DEPLOY_BLOCK} …`);
-  const { registrations, feedback, seconds, batches } = await registryEvents();
-  console.log(`  ${registrations.length} registrations, ${feedback.length} feedback events in ${seconds}s (${batches} batches)`);
+  const prior = previous();
+  const from = prior ? prior.head : DEPLOY_BLOCK;
+  console.log(prior
+    ? `catching up both ERC-8004 registries from block ${from} (previous run covered to there) …`
+    : `indexing both ERC-8004 registries from block ${from} …`);
+
+  const fresh = await registryEvents(from);
+  console.log(`  ${fresh.registrations.length} new registrations, ${fresh.feedback.length} new `
+    + `feedback events in ${fresh.seconds}s (${fresh.batches} batches), head now ${fresh.head}`);
+
+  // Merge before deciding what needs the funding pass: an agent that crossed the threshold with
+  // today's ratings still needs its owner's history walked from the start, not from `from`.
+  const registrations = [...(prior?.registrations ?? []), ...fresh.registrations];
+  const feedback = [...(prior?.feedback ?? []), ...fresh.feedback];
 
   const ownerOf = new Map(registrations.map((r) => [r.agentId, r.owner]));
   const perAgent = new Map();
@@ -129,22 +158,44 @@ const main = async () => {
   const covered = [...perAgent.entries()].filter(([, evs]) => evs.length >= MIN_FEEDBACK);
   const owners = new Set(covered.map(([id]) => ownerOf.get(id)).filter(Boolean));
   const raters = new Set(covered.flatMap(([, evs]) => evs.map((e) => e.client)));
-  console.log(`  ${perAgent.size} agents rated; ${covered.length} with >= ${MIN_FEEDBACK}`);
-  console.log(`  funding pass over ${owners.size} owners and ${raters.size} rater wallets …`);
 
-  const { funded, paid, scanned, seconds: fs } = await fundingEdges(owners, raters);
-  console.log(`  ${scanned} transactions scanned in ${fs}s -> ${funded.size} funding edges, ${paid.size} payment edges`);
+  const funded = new Map(prior?.funded ?? []);
+  const paid = new Map(prior?.paid ?? []);
+  const knownOwners = new Set(prior?.owners ?? []);
+  // Owners we have never walked need their whole history; the rest only need the new blocks.
+  const newOwners = new Set([...owners].filter((o) => !knownOwners.has(o)));
+  console.log(`  ${perAgent.size} agents rated; ${covered.length} with >= ${MIN_FEEDBACK}; `
+    + `${owners.size} owners (${newOwners.size} not walked before)`);
 
-  writeFileSync("data/indexed.json", JSON.stringify({
+  const merge = (target, entries) => {
+    for (const [k, ts] of entries) if (!target.has(k) || target.get(k) > ts) target.set(k, ts);
+  };
+  let scanned = 0;
+  if (newOwners.size) {
+    const full = await fundingEdges(newOwners, raters, DEPLOY_BLOCK);
+    merge(funded, full.funded); merge(paid, full.paid); scanned += full.scanned;
+    console.log(`  full history for ${newOwners.size} new owner(s): ${full.scanned} transactions in ${full.seconds}s`);
+  }
+  const oldOwners = new Set([...owners].filter((o) => knownOwners.has(o)));
+  if (prior && oldOwners.size) {
+    const tail = await fundingEdges(oldOwners, raters, from);
+    merge(funded, tail.funded); merge(paid, tail.paid); scanned += tail.scanned;
+    console.log(`  catch-up for ${oldOwners.size} known owner(s): ${tail.scanned} transactions in ${tail.seconds}s`);
+  }
+  console.log(`  ${scanned} transactions scanned -> ${funded.size} funding edges, ${paid.size} payment edges`);
+
+  writeFileSync(STORE, JSON.stringify({
     indexedAt: new Date().toISOString(),
     source: "Monad mainnet via Envio HyperSync",
     minFeedback: MIN_FEEDBACK,
+    head: fresh.head,
+    owners: [...owners],
     registrations,
     feedback,
     funded: [...funded.entries()],
     paid: [...paid.entries()],
   }));
-  console.log("  -> data/indexed.json");
+  console.log(`  -> ${STORE}`);
 };
 
 main().catch((e) => { console.error(e); process.exit(1); });
