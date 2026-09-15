@@ -11,6 +11,7 @@
   "description": "",
   "type": "module",
   "dependencies": {
-    "@envio-dev/hypersync-client": "^1.4.1"
+    "@envio-dev/hypersync-client": "^1.4.1",
+    "@modelcontextprotocol/sdk": "^1.30.0"
   }
 }
