@@ -26,6 +26,7 @@ const MONAD = {
 
 type Verdict = {
   agentId: number;
+  corroboration?: { bought: boolean; usdcSpent: number; ratersSampled: number; finding: string } | null;
   feedback: number;
   raters: number;
   ownerFunded: number;
@@ -108,6 +109,15 @@ function Answer() {
           <div className="verdict">{agent.verdict}</div>
           <h2>agent #{agent.agentId}</h2>
           <p className="why">{agent.why}</p>
+          {agent.corroboration?.bought && (
+            <div className="bought-line">
+              <b>bought to check our own answer</b>
+              <p>
+                {agent.corroboration.finding} {agent.corroboration.ratersSampled} rater
+                {agent.corroboration.ratersSampled === 1 ? "" : "s"} looked up, ${agent.corroboration.usdcSpent.toFixed(2)} spent.
+              </p>
+            </div>
+          )}
           <table>
             <tbody>
               <tr><td>ratings</td><td>{agent.feedback}</td><td className="note">what the registry shows</td></tr>

@@ -28,6 +28,40 @@ const load = () =>
     ? JSON.parse(readFileSync("data/provenance.json", "utf8"))
     : { totals: {}, agents: [], generatedAt: null };
 
+/// What we bought about an agent's raters, if anything. Kept separate from the computed index
+/// because it costs money and is therefore sparse: most agents have never been enriched, and an
+/// answer has to say which of its two halves is present rather than imply both.
+const enrichment = () =>
+  existsSync("data/enrichment.json")
+    ? JSON.parse(readFileSync("data/enrichment.json", "utf8"))
+    : { funders: {}, agents: {} };
+
+/// The purchased half of the verdict. Our own index can say the owner funded a rater ON MONAD;
+/// Nansen's first-funder edge says who funded it first ANYWHERE, which is the question a farm
+/// would have to defeat on every chain at once.
+function corroboration(e) {
+  if (!e) return null;
+  if (e.sharedFunderIsOwner) {
+    return {
+      bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
+      finding: `all ${e.sharedFunderCount} sampled raters trace back to one first funder, and it is `
+             + `the agent's own owner. Bought from Nansen, independent of our Monad index.`,
+    };
+  }
+  if (e.sharedFunder && e.distinctFunders === 1) {
+    return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
+      finding: `all ${e.sharedFunderCount} sampled raters share one first funder (${e.sharedFunder}), `
+             + `which is the shape of a funded cluster rather than a crowd.` };
+  }
+  if (e.withFirstFunder === 0) {
+    return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
+      finding: "no first-funder record for the sampled raters, so this half is simply unknown." };
+  }
+  return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
+    finding: `${e.distinctFunders} distinct first funders across ${e.ratersSampled} sampled raters, `
+           + `which is what an unrelated crowd looks like.` };
+}
+
 /// Plain-language reading of the numbers. Deliberately blunt: the point of the project is that
 /// a count of ratings means nothing here, so the verdict says why rather than scoring 0-100.
 function verdict(a) {
@@ -115,8 +149,10 @@ createServer(async (req, res) => {
   const agentMatch = p.match(/^\/agent\/(\d+)$/);
   if (agentMatch) {
     const a = prov.agents.find((x) => x.agentId === Number(agentMatch[1]));
+    const e = enrichment().agents[agentMatch[1]];
     return json(res, a ? 200 : 404, a
-      ? { ...a, ...verdict(a), method: prov.method, indexedAt: prov.indexedAt }
+      ? { ...a, ...verdict(a), corroboration: corroboration(e),
+          method: prov.method, indexedAt: prov.indexedAt }
       : { error: "agent has fewer than the covered minimum of ratings, or does not exist" });
   }
 

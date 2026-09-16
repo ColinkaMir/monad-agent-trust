@@ -98,3 +98,11 @@ footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; line-height: 1
 .fund-hint { color: var(--muted); font-size: .82rem; line-height: 1.5; margin-top: .5rem; }
 .fund-hint a { color: var(--accent); }
 .fund-err { color: var(--bad); font-size: .82rem; margin-top: .5rem; }
+
+/* купленное подтверждение внутри карточки вердикта */
+.bought-line {
+  border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px;
+  padding: .7rem .9rem; margin: 0 0 1rem; background: rgba(143,123,248,.06);
+}
+.bought-line b { font-family: ui-monospace, monospace; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.bought-line p { color: var(--ink2); font-size: .88rem; line-height: 1.55; margin-top: .3rem; }

@@ -33,12 +33,25 @@ if (!target) throw new Error("usage: buy-nansen.mjs <address> [--live]");
 const provider = new ethers.JsonRpcProvider(RPC);
 const wallet = new ethers.Wallet(readFileSync(KEY, "utf8").trim(), provider);
 
-// Body shape taken from the call that actually worked in our September round, not from a
-// guess: this endpoint wants a flat address + chain, and rejects the parameters/pagination
-// envelope with HTTP 422 before it takes any money.
+// Each endpoint validates its body strictly and rejects with HTTP 422 BEFORE taking payment,
+// which is decent of them and rare: in our September survey of Monad x402 sellers, 7 of 19 paid
+// calls took the money first and failed afterwards. Shapes below are what the live API accepts,
+// found by asking it rather than by reading docs: current-balance wants a chain name and a
+// pagination envelope, first-funder accepts only chain "all" and refuses extra fields.
 const CHAIN = process.env.NANSEN_CHAIN ?? "ethereum";
-const body = { address: target, chain: CHAIN, hide_spam_token: true,
-               pagination: { page: 1, per_page: 10 } };
+const BODIES = {
+  "first-funder": (addr) => ({ address: addr, chain: "all" }),
+  // related-wallets refuses chain "all" and wants a named chain; its valid list does include
+  // monad. Worth knowing before you call it: on a rejected body this endpoint CHARGES anyway
+  // and answers 422 without a settlement header, unlike first-funder which validates first.
+  "related-wallets": (addr) => ({ address: addr, chain: process.env.NANSEN_CHAIN ?? "monad" }),
+  "counterparties": (addr) => ({ address: addr, chain: CHAIN,
+                                 pagination: { page: 1, per_page: 20 } }),
+};
+const shape = Object.keys(BODIES).find((k) => ENDPOINT.includes(k));
+const body = shape
+  ? BODIES[shape](target)
+  : { address: target, chain: CHAIN, hide_spam_token: true, pagination: { page: 1, per_page: 10 } };
 
 const ask = (headers) => fetch(ENDPOINT, {
   method: "POST",

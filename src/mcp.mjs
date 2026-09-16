@@ -19,6 +19,13 @@ const STORE = "data/provenance.json";
 const load = () =>
   existsSync(STORE) ? JSON.parse(readFileSync(STORE, "utf8")) : { totals: {}, agents: [] };
 
+/// The purchased half: first-funder edges bought from Nansen per rater. Sparse on purpose —
+/// it costs $0.01 a lookup — so an answer says whether it is present instead of implying it.
+const bought = () =>
+  existsSync("data/enrichment.json")
+    ? JSON.parse(readFileSync("data/enrichment.json", "utf8")).agents ?? {}
+    : {};
+
 /// Words, not a score. A 0-100 number would invite exactly the mistake this project exists to
 /// correct: treating a produced quantity as evidence.
 function verdict(a) {
@@ -107,7 +114,16 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
            + `agents have ever been rated at all.`,
       });
     }
-    return text({ ...a, ...verdict(a), indexedAt: data.indexedAt, method: data.method });
+    const e = bought()[String(args.agentId)];
+    return text({
+      ...a, ...verdict(a),
+      corroboration: e
+        ? { source: "Nansen first-funder, bought over x402", usdcSpent: e.usdcSpent,
+            ratersSampled: e.ratersSampled, distinctFunders: e.distinctFunders,
+            sharedFunderIsOwner: e.sharedFunderIsOwner }
+        : { source: "not purchased for this agent", note: "the computed half stands on its own" },
+      indexedAt: data.indexedAt, method: data.method,
+    });
   }
 
   if (name === "wallet_trust") {
