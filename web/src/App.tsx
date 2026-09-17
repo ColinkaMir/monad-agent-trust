@@ -15,6 +15,33 @@ const ENV_ID = import.meta.env.VITE_DYNAMIC_ENV_ID ?? "";
 
 // Monad mainnet, so the wallet that funds the agent and the chain the answers come from are
 // the same place. Dynamic needs the network spelled out; it has no opinion about Monad by default.
+// Dynamic renders inside a shadow DOM, so page CSS cannot reach it; these variables are the
+// supported way in, and the names are taken from the installed SDK rather than from a blog post.
+// Without this the widget is a white pill on a near-black page, which reads as somebody else's
+// component dropped into ours.
+const DYNAMIC_CSS = `
+  .dynamic-shadow-dom {
+    --dynamic-base-1: #0e1424;
+    --dynamic-base-2: #0e1424;
+    --dynamic-base-3: #161d31;
+    --dynamic-base-4: #1c2440;
+    --dynamic-text-primary: #eef1f6;
+    --dynamic-text-secondary: #b9c4dd;
+    --dynamic-text-tertiary: #8d99b5;
+    --dynamic-text-link: #8f7bf8;
+    --dynamic-brand-primary-color: #8f7bf8;
+    --dynamic-border-radius: 10px;
+    --dynamic-hover: #1c2440;
+    --dynamic-success-1: #5ad1a5;
+    --dynamic-error-1: #f0798f;
+    --dynamic-connect-button-background: #0e1424;
+    --dynamic-connect-button-color: #eef1f6;
+    --dynamic-connect-button-border: 1px solid rgba(140, 160, 200, 0.14);
+    --dynamic-connect-button-background-hover: #1c2440;
+    --dynamic-shadow-down-1: none;
+  }
+`;
+
 const MONAD = {
   blockExplorerUrls: ["https://monadexplorer.com/"],
   iconUrls: ["https://prooflines.org/monad/assets/favicon-proofline.svg"],
@@ -192,10 +219,12 @@ function Bill() {
 export default function App() {
   return (
     <DynamicContextProvider
+      theme="dark"
       settings={{
         environmentId: ENV_ID,
         walletConnectors: [EthereumWalletConnectors],
         overrides: { evmNetworks: [MONAD] },
+        cssOverrides: DYNAMIC_CSS,
       }}
     >
       <div className="wrap">
@@ -209,7 +238,9 @@ export default function App() {
               the registry cannot: did the rater pay first, and whose money was it.
             </p>
           </div>
-          {ENV_ID ? <DynamicWidget /> : <div className="nokey">set VITE_DYNAMIC_ENV_ID to enable sign-in</div>}
+          <div className="signin">
+            {ENV_ID ? <DynamicWidget /> : <div className="nokey">set VITE_DYNAMIC_ENV_ID to enable sign-in</div>}
+          </div>
         </header>
         <Answer />
         <FarmMap />
