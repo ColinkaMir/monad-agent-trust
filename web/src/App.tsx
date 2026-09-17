@@ -184,7 +184,21 @@ function Answer() {
           )}
           <div className="bought">
             <b>bought signal</b>
-            {wallet.purchasedSignal?.bought ? (
+            {wallet.purchasedSignal?.cached ? (
+              // A cached answer is free and must say so. Showing the earlier purchase as if it
+              // had just happened is the produced-evidence problem this whole page is about.
+              <p>
+                <b>nothing paid for this request.</b> The answer was already bought on{" "}
+                {new Date(wallet.purchasedSignal.answeredFrom?.purchasedAt).toLocaleString()} for $
+                {wallet.purchasedSignal.answeredFrom?.paidUsdc}{" "}
+                {wallet.purchasedSignal.answeredFrom?.tx && (
+                  <a href={`https://monadexplorer.com/tx/${wallet.purchasedSignal.answeredFrom.tx}`} target="_blank">
+                    {wallet.purchasedSignal.answeredFrom.tx.slice(0, 12)}…
+                  </a>
+                )}{" "}
+                and none of your delegated questions was used.
+              </p>
+            ) : wallet.purchasedSignal?.bought ? (
               <p>
                 paid ${wallet.purchasedSignal.paidUsdc} USDC from{" "}
                 <b>{wallet.purchasedSignal.paidBy ?? "the agent's purse"}</b> ·{" "}

@@ -133,8 +133,25 @@ function verdict(a) {
 /// The visitor's voucher is preferred deliberately. A question asked by somebody who delegated
 /// should cost them, not the house, and the answer can then say whose money settled it.
 async function walletSignal(addr, payer = null) {
+  // Cache the knowledge, never the receipt. Nansen's answer about an address does not change in
+  // six hours, so re-serving it is right and costs nobody anything. Re-serving the PAYMENT is a
+  // lie: it showed a visitor "paid $0.01 from your delegated voucher" with a transaction hash
+  // from somebody else's purchase half an hour earlier, which is this project's own complaint
+  // about produced evidence, committed by this project.
   const hit = walletCache.get(addr.toLowerCase());
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return { ...hit.data, cached: true };
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
+    const { paidUsdc, tx, payer, paidBy, reconciled, ...knowledge } = hit.data;
+    return {
+      ...knowledge,
+      cached: true,
+      answeredFrom: {
+        purchasedAt: new Date(hit.at).toISOString(),
+        paidUsdc, tx, payer,
+        note: "this answer was already bought, so nothing was paid for this request and none of "
+            + "your delegated questions was used",
+      },
+    };
+  }
   let voucher = null, voucherFile = null;
   if (payer) {
     try {
@@ -147,6 +164,19 @@ async function walletSignal(addr, payer = null) {
       voucherFile = join(tmpdir(), `voucher-${voucher.nonce.slice(2, 14)}.json`);
       writeFileSync(voucherFile, JSON.stringify(voucher));
     }
+  }
+  // If a payer was named and no voucher of theirs turned out to be usable, stop. Quietly paying
+  // from the house instead would spend our money on their question, defeat the gate that keeps
+  // strangers from draining the purse, and tell them a delegated question was used when it was
+  // not. This fired for real: a visitor cancelled their authorisation on chain, our records still
+  // showed it available, and the fallback reached for the agent's own wallet.
+  if (payer && !voucher) {
+    return {
+      bought: false,
+      why: "none of the questions delegated by that address can be used right now. They may have "
+         + "been cancelled on chain, already spent, or expired; nothing was charged to anyone.",
+      delegate: "POST /delegate",
+    };
   }
   try {
     const { stdout } = await run("node", ["src/buy-nansen.mjs", addr, "--live"],

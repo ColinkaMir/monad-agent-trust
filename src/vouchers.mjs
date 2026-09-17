@@ -105,13 +105,14 @@ export function accept(list) {
 export function summary(address, now = Math.floor(Date.now() / 1000)) {
   const a = address.toLowerCase();
   const mine = load().vouchers.filter((v) => v.from === a);
-  const live = mine.filter((v) => !v.spentAt && Number(v.validBefore) > now);
+  const live = mine.filter((v) => !v.spentAt && !v.retiredAt && Number(v.validBefore) > now);
   const usdc = live.reduce((n, v) => n + Number(v.value) / 1e6, 0);
   return {
     address: a,
     delegated: mine.length,
     spent: mine.filter((v) => v.spentAt).length,
-    expired: mine.filter((v) => !v.spentAt && Number(v.validBefore) <= now).length,
+    cancelled: mine.filter((v) => v.retiredAt && !v.spentAt).length,
+    expired: mine.filter((v) => !v.spentAt && !v.retiredAt && Number(v.validBefore) <= now).length,
     questionsLeft: live.length,
     usdcLeft: +usdc.toFixed(6),
     expiresAt: live.length
@@ -159,7 +160,7 @@ export async function pick(address, { payTo, amount, provider }, now = Math.floo
   const a = address.toLowerCase();
   const want = BigInt(amount);
   const candidates = db.vouchers.filter((v) =>
-    v.from === a && !v.spentAt && Number(v.validBefore) > now + 30
+    v.from === a && !v.spentAt && !v.retiredAt && Number(v.validBefore) > now + 30
     && v.to === payTo.toLowerCase() && BigInt(v.value) === want);
   if (!candidates.length) return null;
 
@@ -174,7 +175,14 @@ export async function pick(address, { payTo, amount, provider }, now = Math.floo
   for (const v of candidates) {
     let used = false;
     try { used = await usdc.authorizationState(v.from, v.nonce); } catch { used = false; }
-    if (used) { v.spentAt = v.spentAt ?? new Date().toISOString(); v.tx = v.tx ?? "used-elsewhere"; continue; }
+    if (used) {
+      // The chain says this nonce is dead, and the ordinary reason is that its signer cancelled
+      // it. Recording that as "spent" would count a revocation as a question answered, which is
+      // the opposite of what happened and hides the feature working.
+      v.retiredAt = v.retiredAt ?? new Date().toISOString();
+      v.retiredBecause = v.retiredBecause ?? "cancelled or already used on chain";
+      continue;
+    }
     save(db);
     return v;
   }

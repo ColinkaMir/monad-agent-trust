@@ -35,6 +35,7 @@ type Summary = {
   // Signed and payable are different numbers: an authorization from an empty wallet verifies
   // perfectly and settles never.
   usdcBalance: number | null; affordable: number | null; unfunded?: number;
+  cancelled?: number;
 };
 
 const randomNonce = () => {
@@ -175,7 +176,8 @@ export function Delegate() {
       <p className="fund-line">
         {summary
           ? <><b>{summary.affordable ?? summary.questionsLeft} ready</b> of {summary.questionsLeft} signed
-              {summary.spent ? `, ${summary.spent} spent` : ""}
+              {summary.spent ? `, ${summary.spent} spent on answers` : ""}
+              {summary.cancelled ? `, ${summary.cancelled} cancelled by you on chain` : ""}
               {summary.expired ? `, ${summary.expired} expired` : ""}.
               {" "}Your wallet holds ${(summary.usdcBalance ?? 0).toFixed(2)} USDC.</>
           : <>nothing delegated yet.</>}

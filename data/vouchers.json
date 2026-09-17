@@ -70,7 +70,9 @@
    "signature": "0xde21a304ad1ade3be9e755a09554f2c1f4fb30a9a5652eafcdbb0c3cb06b5c262f6a96ae0ea7ecf6197c4755e9eeb7f8254addb83d9e350766510daf32a7a8681b",
    "addedAt": "2026-09-17T14:38:14.460Z",
    "spentAt": null,
-   "tx": null
+   "tx": null,
+   "retiredAt": "2026-09-17T14:47:46.422Z",
+   "retiredBecause": "cancelled or already used on chain"
   }
  ]
 }
