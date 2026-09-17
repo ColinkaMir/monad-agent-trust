@@ -11,8 +11,12 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const idx = JSON.parse(readFileSync("data/indexed.json", "utf8"));
-const funded = new Map(idx.funded);   // `${owner}|${wallet}` -> first ts owner funded wallet
-const paid = new Map(idx.paid);       // `${wallet}|${owner}` -> first ts wallet paid owner
+// `${owner}|${wallet}` -> [ts, wei] of the first transfer in that direction. Older index files
+// stored a bare timestamp; both shapes are read so a stale data/indexed.json degrades to
+// "timings without amounts" instead of crashing or, worse, comparing a number to an array.
+const edge = (v) => (Array.isArray(v) ? v : v === undefined ? undefined : [v, null]);
+const funded = new Map(idx.funded.map(([k, v]) => [k, edge(v)]));
+const paid = new Map(idx.paid.map(([k, v]) => [k, edge(v)]));
 const ownerOf = new Map(idx.registrations.map((r) => [r.agentId, r.owner]));
 
 const byAgent = new Map();
@@ -40,17 +44,34 @@ for (const [agentId, events] of byAgent) {
   // counts one wallet once per agent it rated, and on this chain that is not hypothetical: a
   // single wallet is the entire independent record of two different agents.
   const independentWallets = [];
+  // The money side of the same loop, so the published MON totals can be recomputed from the
+  // file rather than taken on faith, and so the round trip can be seen: out, rate, back.
+  let weiOut = 0n, weiBack = 0n;
+  const outAmounts = [], toRating = [], toReturn = [];
   for (const [wallet, ratedAt] of firstRating) {
     if (wallet === owner) selfRated++;
     const gotFromOwner = funded.get(`${owner}|${wallet}`);
     const sentToOwner = paid.get(`${wallet}|${owner}`);
-    if (gotFromOwner !== undefined) ownerFunded++;
-    if (sentToOwner !== undefined) (sentToOwner < ratedAt ? paidBefore++ : paidAfter++);
+    if (gotFromOwner !== undefined) {
+      ownerFunded++;
+      if (gotFromOwner[1]) { weiOut += BigInt(gotFromOwner[1]); outAmounts.push(gotFromOwner[1]); }
+      toRating.push(ratedAt - gotFromOwner[0]);
+    }
+    if (sentToOwner !== undefined) {
+      (sentToOwner[0] < ratedAt ? paidBefore++ : paidAfter++);
+      if (sentToOwner[1]) weiBack += BigInt(sentToOwner[1]);
+      if (sentToOwner[0] >= ratedAt) toReturn.push(sentToOwner[0] - ratedAt);
+    }
     if (gotFromOwner !== undefined && sentToOwner !== undefined) fullCycle++;
-    if (sentToOwner !== undefined && sentToOwner < ratedAt && gotFromOwner === undefined) {
+    if (sentToOwner !== undefined && sentToOwner[0] < ratedAt && gotFromOwner === undefined) {
       independentWallets.push(wallet);
     }
   }
+  const median = (a) => (a.length ? [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
+  const medianWei = (a) => (a.length
+    ? [...a].map(BigInt).sort((x, y) => (x < y ? -1 : x > y ? 1 : 0))[Math.floor(a.length / 2)]
+    : null);
+  const mon = (w) => (w === null ? null : +(Number(w) / 1e18).toFixed(2));
   const independentPaid = independentWallets.length;
 
   agents.push({
@@ -61,6 +82,8 @@ for (const [agentId, events] of byAgent) {
     busiestDayShare: +(Math.max(...days.values()) / events.length).toFixed(4),
     first: day(events[0].ts), last: day(events[events.length - 1].ts),
     selfRated, ownerFunded, fullCycle, paidBefore, paidAfter, independentPaid, independentWallets,
+    monOut: mon(weiOut), monBack: mon(weiBack), monMedianOut: mon(medianWei(outAmounts)),
+    secondsFundingToRating: median(toRating), secondsRatingToReturn: median(toReturn),
   });
 }
 agents.sort((a, b) => b.feedback - a.feedback);

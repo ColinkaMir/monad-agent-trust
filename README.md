@@ -23,8 +23,14 @@ reading a produced quantity as evidence.
 
 The obvious fix for fake reviews is to weight a rating by whether the rater ever paid the agent.
 On Monad that fix fails completely. On agent #182 **all 7,665 raters had paid the owner**, a median
-of 10.93 MON each. The owner had funded them first: 84,283 MON out, 83,781 MON back, a median of
-**six seconds** from funding to rating and six more from rating to the money returning.
+of 11 MON each. The owner had funded them first: 84,282.5 MON out and 83,781.2 MON back, a median
+of **eight seconds** from funding to rating and four more from rating to the money coming home.
+**99.9% of those round trips closed inside half a minute.**
+
+Every figure in that paragraph is recomputed by `src/score.mjs` from `data/indexed.json`, which is
+in this repo. It had to be: an earlier draft of this file published six seconds and six, and 10.93
+MON, from a working note nobody could check, and the index had thrown the transfer amounts away
+after reading them. Numbers that cannot be recomputed are the thing this project objects to.
 
 A payment proves nothing on its own. Direction and provenance are what separate a customer from a
 wallet that was paid to hold an opinion.

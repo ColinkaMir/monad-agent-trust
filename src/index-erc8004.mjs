@@ -94,8 +94,8 @@ async function registryEvents(fromBlock) {
 /// change a verdict: owner -> rater (funding) and rater -> owner (payment).
 async function fundingEdges(owners, raters, fromBlock) {
   const t0 = Date.now();
-  const funded = new Map();   // `${owner}|${wallet}` -> ts
-  const paid = new Map();     // `${wallet}|${owner}` -> ts
+  const funded = new Map();   // `${owner}|${wallet}` -> [ts, wei]
+  const paid = new Map();     // `${wallet}|${owner}` -> [ts, wei]
   let scanned = 0;
   // An EMPTY address list here means "match everything", not "match nothing". That is how the
   // first run turned into a twenty-minute full-chain scan: a parsing bug left owners empty, the
@@ -120,13 +120,18 @@ async function fundingEdges(owners, raters, fromBlock) {
       const from = (tx.from ?? "").toLowerCase();
       const to = (tx.to ?? "").toLowerCase();
       const ts = times.get(tx.blockNumber) ?? 0;
+      // Keep the amount, not only the moment. The published claim about this farm is that
+      // 84,283 MON went out and 83,781 came back; a reader given only timestamps cannot check
+      // either figure, which makes the evidence in this repo weaker than the sentence it is
+      // supposed to support. [timestamp, wei-as-string] costs a few megabytes and settles it.
+      const wei = BigInt(tx.value).toString();
       if (owners.has(from) && raters.has(to)) {
         const k = `${from}|${to}`;
-        if (!funded.has(k) || funded.get(k) > ts) funded.set(k, ts);
+        if (!funded.has(k) || funded.get(k)[0] > ts) funded.set(k, [ts, wei]);
       }
       if (owners.has(to) && raters.has(from)) {
         const k = `${from}|${to}`;
-        if (!paid.has(k) || paid.get(k) > ts) paid.set(k, ts);
+        if (!paid.has(k) || paid.get(k)[0] > ts) paid.set(k, [ts, wei]);
       }
     }
   }
@@ -168,8 +173,9 @@ const main = async () => {
   console.log(`  ${perAgent.size} agents rated; ${covered.length} with >= ${MIN_FEEDBACK}; `
     + `${owners.size} owners (${newOwners.size} not walked before)`);
 
+  // Entries are [key, [ts, wei]]. Earliest transfer wins, and its amount travels with it.
   const merge = (target, entries) => {
-    for (const [k, ts] of entries) if (!target.has(k) || target.get(k) > ts) target.set(k, ts);
+    for (const [k, v] of entries) if (!target.has(k) || target.get(k)[0] > v[0]) target.set(k, v);
   };
   let scanned = 0;
   if (newOwners.size) {

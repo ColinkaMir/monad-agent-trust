@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-17T12:35:31.246Z",
- "indexedAt": "2026-09-17T10:03:01.592Z",
+ "generatedAt": "2026-09-17T13:15:09.530Z",
+ "indexedAt": "2026-09-17T13:15:01.538Z",
  "source": "Monad mainnet via Envio HyperSync",
  "covers": "agents with at least 5 feedback events",
  "method": "For each rated agent we read every native transfer touching the agent owner and ask two questions the registry cannot answer: did the rating wallet pay the agent BEFORE it rated, and had the owner funded that wallet in the first place. A payment on its own proves nothing: on the most-rated agent every rater had paid, and every rater had been funded.",
@@ -28,7 +28,12 @@
    "paidBefore": 0,
    "paidAfter": 7665,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 84282.5,
+   "monBack": 83781.24,
+   "monMedianOut": 11,
+   "secondsFundingToRating": 8,
+   "secondsRatingToReturn": 4
   },
   {
    "agentId": 9,
@@ -45,7 +50,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 87,
@@ -62,7 +72,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8317,
@@ -79,7 +94,12 @@
    "paidBefore": 0,
    "paidAfter": 1,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 200,
+   "monBack": 161.46,
+   "monMedianOut": 200,
+   "secondsFundingToRating": 36730,
+   "secondsRatingToReturn": 393122
   },
   {
    "agentId": 4,
@@ -98,7 +118,12 @@
    "independentPaid": 1,
    "independentWallets": [
     "0x794c94f1b5e455c1dba27bb28c6085db0fe544f9"
-   ]
+   ],
+   "monOut": 2,
+   "monBack": 42,
+   "monMedianOut": 2,
+   "secondsFundingToRating": 93,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 153,
@@ -115,7 +140,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": 0,
+   "secondsFundingToRating": -4489,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 10182,
@@ -132,7 +162,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 10181,
@@ -149,7 +184,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 154,
@@ -166,7 +206,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8348,
@@ -183,7 +228,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 58,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 156,
@@ -200,7 +250,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 155,
@@ -217,7 +272,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": 0,
+   "secondsFundingToRating": -2720,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 157,
@@ -234,7 +294,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8354,
@@ -251,7 +316,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16557,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8355,
@@ -268,7 +338,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16573,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 2106,
@@ -285,7 +360,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 146,
@@ -304,7 +384,12 @@
    "independentPaid": 1,
    "independentWallets": [
     "0x071a21c5db495d54de4553d0a294bae2edc9efde"
-   ]
+   ],
+   "monOut": 0,
+   "monBack": 0.1,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 158,
@@ -321,7 +406,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8353,
@@ -338,7 +428,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16551,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 10180,
@@ -355,7 +450,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 145,
@@ -374,7 +474,12 @@
    "independentPaid": 1,
    "independentWallets": [
     "0x071a21c5db495d54de4553d0a294bae2edc9efde"
-   ]
+   ],
+   "monOut": 0,
+   "monBack": 0.1,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8349,
@@ -391,7 +496,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16759,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8350,
@@ -408,7 +518,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16775,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8351,
@@ -425,7 +540,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16792,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8352,
@@ -442,7 +562,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 16808,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8365,
@@ -459,7 +584,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.1,
+   "monBack": 0,
+   "monMedianOut": 0.1,
+   "secondsFundingToRating": 2042362,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8394,
@@ -476,7 +606,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0.83,
+   "monBack": 0,
+   "monMedianOut": 0.83,
+   "secondsFundingToRating": -183228,
+   "secondsRatingToReturn": null
   },
   {
    "agentId": 8393,
@@ -493,7 +628,12 @@
    "paidBefore": 0,
    "paidAfter": 0,
    "independentPaid": 0,
-   "independentWallets": []
+   "independentWallets": [],
+   "monOut": 0,
+   "monBack": 0,
+   "monMedianOut": null,
+   "secondsFundingToRating": null,
+   "secondsRatingToReturn": null
   }
  ]
 }
