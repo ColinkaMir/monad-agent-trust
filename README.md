@@ -79,6 +79,17 @@ after the purchase exactly one of those wallets has a provenance with nothing ag
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
 
+Exactly what is used, so this can be checked rather than taken on trust:
+
+| | |
+|---|---|
+| Endpoint | `POST /api/v1/profiler/address/related-wallets` (Profiler), body `{address, chain}` |
+| Also called | `/profiler/address/first-funder` (chain must be `all`), `/profiler/address/current-balance` |
+| Data categories | First Funder edges, and the entity label attached to the funding address |
+| Access | x402 on Monad, $0.01 a call, no account and no API key. Payment signed as EIP-3009 and settled against USDC at `0x754704Bc…` |
+| Where it lands | `src/buy-nansen.mjs` buys, `src/enrich-nansen.mjs` samples a rater set, `src/serve.mjs` folds it into the verdict, `src/mcp.mjs` exposes it as a tool |
+| What it decided | The label on one funder turned "independent" into "independent of this owner, not of everyone". Without it the headline is wrong |
+
 On agent #182 the same purchase agrees with the free half instead of correcting it: eleven
 lookups, eleven cents, and every one of the eleven raters was first funded by that agent's own
 owner. Two sources of different kinds reaching the same answer is the only reason to believe
