@@ -21,6 +21,9 @@ import { promisify } from "node:util";
 
 const run = promisify(execFile);
 const PORT = Number(process.env.PORT ?? 8460);
+// Loopback by default: nginx terminates TLS and proxies, so binding every interface would only
+// widen the attack surface of an endpoint that spends money.
+const HOST = process.env.HOST ?? "127.0.0.1";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;   // a purchased signal is good for six hours
 const RPC = process.env.MONAD_RPC ?? "https://rpc.monad.xyz";
 const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
@@ -261,9 +264,28 @@ createServer(async (req, res) => {
     // taken on its word: it only selects among vouchers that address already signed, so naming
     // somebody else's address can spend nothing that they did not authorise for exactly this.
     const payer = url.searchParams.get("payer");
-    const signal = url.searchParams.get("buy") === "0"
-      ? { bought: false, skipped: true }
-      : await walletSignal(addr, /^0x[0-9a-fA-F]{40}$/.test(payer ?? "") ? payer : null);
+    const namedPayer = /^0x[0-9a-fA-F]{40}$/.test(payer ?? "") ? payer : null;
+    // Public and paid do not mix by default. This endpoint spends real USDC, so on the open
+    // internet an unauthenticated caller must not be able to empty the agent's purse by holding
+    // down refresh. A purchase happens when the caller brought their own delegated voucher, or
+    // when the operator explicitly allows the house to pay (AGENT_PAYS_FOR_STRANGERS=1).
+    const HOUSE_PAYS = process.env.AGENT_PAYS_FOR_STRANGERS === "1";
+    const delegated = namedPayer ? vouchers.summary(namedPayer).questionsLeft > 0 : false;
+    let signal;
+    if (url.searchParams.get("buy") === "0") {
+      signal = { bought: false, skipped: true };
+    } else if (delegated || HOUSE_PAYS) {
+      signal = await walletSignal(addr, delegated ? namedPayer : null);
+    } else {
+      signal = {
+        bought: false,
+        why: namedPayer
+          ? "that address has no unspent delegated questions left"
+          : "a purchased signal costs $0.01 of real USDC, so it is not spent for anonymous "
+            + "callers. Delegate a question first, then ask again with ?payer=<your address>.",
+        delegate: "POST /delegate",
+      };
+    }
     return json(res, 200, {
       address: addr,
       ownsRatedAgents: owned.map((a) => ({ agentId: a.agentId, ...verdict(a) })),
@@ -334,4 +356,4 @@ createServer(async (req, res) => {
   }
 
   json(res, 404, { error: "not found" });
-}).listen(PORT, () => console.log(`agent-trust listening on :${PORT}`));
+}).listen(PORT, HOST, () => console.log(`agent-trust listening on ${HOST}:${PORT}`));

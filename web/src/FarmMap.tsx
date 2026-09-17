@@ -38,7 +38,7 @@ export function FarmMap() {
   const [width, setWidth] = useState(640);
 
   useEffect(() => {
-    fetch("farm.json").then((r) => r.json()).then(setFarm).catch(() => {});
+    fetch(`${import.meta.env.BASE_URL}farm.json`).then((r) => r.json()).then(setFarm).catch(() => {});
   }, []);
 
   useEffect(() => {

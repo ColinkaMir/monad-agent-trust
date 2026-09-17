@@ -1,13 +1,13 @@
 {
- "reconciledAt": "2026-09-17T12:40:05.944Z",
+ "reconciledAt": "2026-09-17T13:40:01.848Z",
  "wallet": "0x9E66867adfDC613891A96d82a53988829cD39004",
  "payTo": [
   "0x93053f1e7A5eFEDa532Fe69CbbE43cBEc3A0F13f"
  ],
  "since": "2026-09-14T11:09:03.700Z",
- "count": 20,
- "totalUsdc": 0.2,
- "deliveredCalls": 20,
+ "count": 23,
+ "totalUsdc": 0.23,
+ "deliveredCalls": 23,
  "unassignedTransfers": 0,
  "transfers": [
   {
@@ -149,6 +149,27 @@
    "usdc": 0.01,
    "assignedTo": "2026-09-17T12:37:46.182Z",
    "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0xb38442db23094153de7c40a70899a874bda004cbfccf6dbdc35433f708a7ba66",
+   "when": "2026-09-17T13:30:26.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T13:30:26.527Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x8c5a22097fc75b408a84df7110d24a88e8b6f5d6d33fd91021f0ddfa92bbf039",
+   "when": "2026-09-17T13:31:59.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T13:31:59.814Z",
+   "endpoint": "current-balance"
+  },
+  {
+   "tx": "0x66a5b694f9dc9823f01c79447c158acfdf6e4c7ce91fb01692d068f6a591e971",
+   "when": "2026-09-17T13:36:48.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T13:36:49.179Z",
+   "endpoint": "current-balance"
   }
  ]
 }

@@ -3,6 +3,8 @@
 **Provenance for ERC-8004 reputation on Monad, from a service that buys its own inputs and shows
 its own bill.**
 
+Live: **https://prooflines.org/monad/agent-trust/** (API under `/api`, MCP over stdio)
+
 The registry counts ratings. On Monad that count is self-produced:
 
 - **10,252** agents registered, **84** ever rated
@@ -123,15 +125,15 @@ money paid for it.
 The service pays for its answers and publishes what that cost, because a service that judges other
 people's honesty should not hide its own inputs. `GET /spend` at any moment; at the time of writing:
 
-**24 calls, 20 delivered, and the chain says $0.20.**
+**27 calls, 23 delivered, and the chain says $0.23.**
 
 This project has now caught itself twice, and both are in the git history on purpose.
 
 The per-call ledger over-stated the bill: a rejected call booked a neighbouring call's transfer,
 because its reconciliation window opened five blocks before the request was even sent. The full
 on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer,
-and the books balance: twenty transfers, twenty answers, and Nansen has never taken a cent
-it did not answer for.
+and the books balance: twenty-three transfers, twenty-three answers, and Nansen has never
+taken a cent it did not answer for.
 
 The provenance count over-stated independence, in the same shape as the thing this project was
 built to expose. The total was published as "three independent ratings network-wide" and it was
