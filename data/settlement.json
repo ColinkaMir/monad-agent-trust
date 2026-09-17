@@ -1,13 +1,13 @@
 {
- "reconciledAt": "2026-09-17T10:11:08.205Z",
+ "reconciledAt": "2026-09-17T12:40:05.944Z",
  "wallet": "0x9E66867adfDC613891A96d82a53988829cD39004",
  "payTo": [
   "0x93053f1e7A5eFEDa532Fe69CbbE43cBEc3A0F13f"
  ],
  "since": "2026-09-14T11:09:03.700Z",
- "count": 11,
- "totalUsdc": 0.11,
- "deliveredCalls": 11,
+ "count": 20,
+ "totalUsdc": 0.2,
+ "deliveredCalls": 20,
  "unassignedTransfers": 0,
  "transfers": [
   {
@@ -85,6 +85,69 @@
    "when": "2026-09-16T10:37:01.000Z",
    "usdc": 0.01,
    "assignedTo": "2026-09-16T10:37:02.007Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x308e9cc0f9e2e961fec6425c8150f273824de28862cd5a44175c9149f54f8cce",
+   "when": "2026-09-17T12:32:22.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:32:22.787Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x1e8314709a8ea9d7fe5efb025b2dadd41b2587123292623014ffed8bd5d32e9c",
+   "when": "2026-09-17T12:32:24.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:32:24.747Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x7cbc4e9030cea2a9ae98c3959014f1d3bea8ccb39ff7f14782d3aab0f95318e1",
+   "when": "2026-09-17T12:32:26.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:32:26.876Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x61c806a2740b559091ae3dee0e347f6c21e5f2e818450461d691e94dfee6a572",
+   "when": "2026-09-17T12:32:28.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:32:29.040Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x287066e5f06ed6fe8008608cede9e89ded2877b9f83add395b45eb3fc2f261cf",
+   "when": "2026-09-17T12:37:38.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:37:38.427Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x5b7d3e1cc6477ff2b988eb30ccb6375890f88803940007a069d0308d13501017",
+   "when": "2026-09-17T12:37:39.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:37:40.016Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x15ff83168a80173a368a70d60ca53c3e60f0fce017d0859365e9d5018b8d373c",
+   "when": "2026-09-17T12:37:41.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:37:42.116Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x9074e9c41cd7b26fe28b80ec75409bb9f1985b39f79a0b85201e212c5a332e75",
+   "when": "2026-09-17T12:37:43.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:37:44.074Z",
+   "endpoint": "related-wallets"
+  },
+  {
+   "tx": "0x7fee9232db606d3334b75951df25e437d537db0d400e213d162d8f8b278c459d",
+   "when": "2026-09-17T12:37:45.000Z",
+   "usdc": 0.01,
+   "assignedTo": "2026-09-17T12:37:46.182Z",
    "endpoint": "related-wallets"
   }
  ]

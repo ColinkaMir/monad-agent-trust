@@ -9,7 +9,8 @@ The registry counts ratings. On Monad that count is self-produced:
 - **9,188** ratings in total, and **99.7% of them landed in three days of February 2026**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
-- Across the whole chain, ratings that survive both provenance filters: **3**
+- Across the whole chain, ratings that survive both provenance filters: **3, from 2 wallets**, and
+  buying the funding history of those two leaves **one** that nothing is known against
 
 So this asks the two questions the registry cannot answer, and answers them in words rather than
 with a score out of a hundred, because a score invites exactly the mistake this exists to correct:
@@ -52,11 +53,28 @@ tier's 30 requests a minute. The two pipelines are independent and agree on ever
 which is the only reason to trust either.
 
 **Nansen.** Not a panel of their data; an input to a verdict. `/profiler/address/related-wallets`
-returns a First Funder edge for a wallet, for $0.01, paid over x402 on Monad with no account and no
-key. Six lookups on agent #182 cost six cents and all six returned the same first funder: the
-agent's own owner. This is not a second opinion on something we already knew: a Monad index can
-only see funding that happened on Monad, so without the purchase an owner who funds their raters
-from any other chain reads as absent, and the agent reads as clean.
+returns a First Funder edge and an entity label for a wallet, for $0.01, paid over x402 on Monad
+with no account and no key. This is not a second opinion on something we already knew: a Monad
+index can only see funding that happened on Monad, so without the purchase an owner who funds
+their raters from any other chain reads as absent, and the agent reads as clean.
+
+It decided the headline. A few cents bought the funding history of everything this chain has that
+looks independent, and the answer came back split:
+
+| Wallet | Rated | First funder | Verdict |
+|---|---|---|---|
+| `0x794c94f1` | agent 4 | `0xdf747918` | Nansen labels it **🤖 Distributor**, a wallet whose business is funding many wallets. Independent of *this* owner, not independent of everyone |
+| `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it |
+
+So of 9,188 ratings, the ones that survive the free filters number three, they come from two
+wallets, and after the purchase exactly one wallet on the entire chain has a clean provenance. The
+label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
+and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
+
+On agent #182 the same purchase agrees with the free half instead of correcting it: eleven
+lookups, eleven cents, and every one of the eleven raters was first funded by that agent's own
+owner. Two sources of different kinds reaching the same answer is the only reason to believe
+either.
 
 **Dynamic.** The wallet does work. Every wallet question costs real money out of the agent's
 address, and when it runs dry the service stops answering, so the page shows the balance as *how
@@ -68,16 +86,22 @@ in the confirmation dialog. Sign-in creates the wallet; the transfer is what it 
 The service pays for its answers and publishes what that cost, because a service that judges other
 people's honesty should not hide its own inputs. `GET /spend` at any moment; at the time of writing:
 
-**15 calls, 11 delivered, and the chain says $0.11.**
+**24 calls, 20 delivered, and the chain says $0.20.**
 
-Our own per-call ledger first said $0.15 with one call "paid and nothing returned". Both figures
-were wrong: four rejected calls never settled at all, and one of them had booked a neighbouring
-call's transfer because its reconciliation window opened five blocks before the request. The full
-on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer:
-eleven transfers for eleven answers, and Nansen never took a cent it did not answer for. The wrong
-ledger stays in the repo history on purpose, because it is the project's thesis demonstrated on
-the project itself: every count is produced by someone, including ours, and the chain is the only
-book that balances.
+This project has now caught itself twice, and both are in the git history on purpose.
+
+The per-call ledger over-stated the bill: a rejected call booked a neighbouring call's transfer,
+because its reconciliation window opened five blocks before the request was even sent. The full
+on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer,
+and the books balance: twenty transfers, twenty answers, and Nansen has never taken a cent
+it did not answer for.
+
+The provenance count over-stated independence, in the same shape as the thing this project was
+built to expose. "Three independent ratings network-wide" was three *ratings* from two *wallets*,
+because the total added up per-agent counts and one wallet is the whole independent record of two
+different agents. That error needed no purchase to find, only the honesty to count the right noun,
+and it is exactly the mistake a registry makes when it reports a number of ratings as a number of
+opinions. Both figures are published now, and they differ.
 
 The wider point stands on the other sellers: in our September survey of every x402 seller on
 Monad, 7 of 19 paid calls took the money and answered with an error, and one returned HTTP 200
@@ -117,6 +141,8 @@ check is for.
 Limits: provenance is computed for agents with at least five ratings (28 agents,
 9,118 of 9,188 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
-so the count of three independent raters is an upper bound rather than a floor.
+so even the one wallet left standing is an upper bound rather than a floor. That upper bound has
+already moved once: it was three before we bought the funding history, and buying it is what
+turned three ratings into two wallets into one.
 
 Built for Metropolis, September 2026, by [ProofLines](https://prooflines.org/monad/).

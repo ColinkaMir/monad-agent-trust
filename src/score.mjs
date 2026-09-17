@@ -35,7 +35,11 @@ for (const [agentId, events] of byAgent) {
   const days = new Map();
   for (const e of events) days.set(day(e.ts), (days.get(day(e.ts)) ?? 0) + 1);
 
-  let ownerFunded = 0, paidBefore = 0, paidAfter = 0, fullCycle = 0, independentPaid = 0, selfRated = 0;
+  let ownerFunded = 0, paidBefore = 0, paidAfter = 0, fullCycle = 0, selfRated = 0;
+  // Keep the wallets, not just the count. Summing per-agent counts across the network silently
+  // counts one wallet once per agent it rated, and on this chain that is not hypothetical: a
+  // single wallet is the entire independent record of two different agents.
+  const independentWallets = [];
   for (const [wallet, ratedAt] of firstRating) {
     if (wallet === owner) selfRated++;
     const gotFromOwner = funded.get(`${owner}|${wallet}`);
@@ -43,8 +47,11 @@ for (const [agentId, events] of byAgent) {
     if (gotFromOwner !== undefined) ownerFunded++;
     if (sentToOwner !== undefined) (sentToOwner < ratedAt ? paidBefore++ : paidAfter++);
     if (gotFromOwner !== undefined && sentToOwner !== undefined) fullCycle++;
-    if (sentToOwner !== undefined && sentToOwner < ratedAt && gotFromOwner === undefined) independentPaid++;
+    if (sentToOwner !== undefined && sentToOwner < ratedAt && gotFromOwner === undefined) {
+      independentWallets.push(wallet);
+    }
   }
+  const independentPaid = independentWallets.length;
 
   agents.push({
     agentId, owner,
@@ -53,7 +60,7 @@ for (const [agentId, events] of byAgent) {
     topRaterShare: +(Math.max(...perClient.values()) / events.length).toFixed(4),
     busiestDayShare: +(Math.max(...days.values()) / events.length).toFixed(4),
     first: day(events[0].ts), last: day(events[events.length - 1].ts),
-    selfRated, ownerFunded, fullCycle, paidBefore, paidAfter, independentPaid,
+    selfRated, ownerFunded, fullCycle, paidBefore, paidAfter, independentPaid, independentWallets,
   });
 }
 agents.sort((a, b) => b.feedback - a.feedback);
@@ -73,7 +80,12 @@ const out = {
     feedbackEvents: idx.feedback.length,
     ratedAgents: byAgent.size,
     agentsCovered: agents.length,
-    independentPaidRatersNetworkWide: agents.reduce((n, a) => n + a.independentPaid, 0),
+    // Ratings and wallets are different numbers and the gap is the point: the same wallet is the
+    // whole independent record of two separate agents, so adding per-agent counts overstates how
+    // many independent parties exist on this chain.
+    independentPaidRatings: agents.reduce((n, a) => n + a.independentPaid, 0),
+    independentPaidWalletsNetworkWide:
+      new Set(agents.flatMap((a) => a.independentWallets)).size,
   },
   agents,
 };
@@ -81,7 +93,8 @@ writeFileSync("data/provenance.json", JSON.stringify(out, null, 1));
 
 console.log(`${out.totals.registrations} registrations, ${out.totals.feedbackEvents} feedback events`);
 console.log(`${out.totals.ratedAgents} agents rated, ${agents.length} covered`);
-console.log(`independent paid raters across the whole network: ${out.totals.independentPaidRatersNetworkWide}\n`);
+console.log(`independent paid ratings across the whole network: ${out.totals.independentPaidRatings}, `
+  + `from ${out.totals.independentPaidWalletsNetworkWide} distinct wallet(s)\n`);
 console.log("agent     feedback  raters  owner-funded  full-cycle  paid-before  independent  window");
 for (const a of agents.slice(0, 12)) {
   console.log(`#${String(a.agentId).padEnd(8)}${String(a.feedback).padEnd(10)}${String(a.raters).padEnd(8)}`

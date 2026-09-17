@@ -48,25 +48,42 @@ function corroboration(e) {
     gap: "not bought for this agent, so the owner-funding answer here sees only Monad and would "
        + "miss a rater funded on another chain",
   };
-  if (e.sharedFunderIsOwner) {
-    return {
-      bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
-      finding: `all ${e.sharedFunderCount} sampled raters trace back to one first funder, and it is `
-             + `the agent's own owner. Bought from Nansen, independent of our Monad index.`,
-    };
-  }
-  if (e.sharedFunder && e.distinctFunders === 1) {
-    return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
-      finding: `all ${e.sharedFunderCount} sampled raters share one first funder (${e.sharedFunder}), `
-             + `which is the shape of a funded cluster rather than a crowd.` };
-  }
+  const base = { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled };
+  // Nansen pads labels with zero-width characters; they are invisible in a browser and turn into
+  // noise in a JSON client, so they come off before the label is quoted anywhere.
+  const clean = (l) => l.replace(/[\u200b-\u200d\ufeff]/g, "").trim();
+  const labels = Object.entries(e.funderLabels ?? {})
+    .map(([f, l]) => `${f.slice(0, 10)}… is labelled ${clean(l)}`);
+  const withLabels = (finding) => labels.length ? { ...base, finding, labels } : { ...base, finding };
+
   if (e.withFirstFunder === 0) {
-    return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
-      finding: "no first-funder record for the sampled raters, so this half is simply unknown." };
+    return { ...base, finding: "no first-funder record for the sampled raters, so this half is "
+                             + "simply unknown." };
   }
-  return { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
-    finding: `${e.distinctFunders} distinct first funders across ${e.ratersSampled} sampled raters, `
-           + `which is what an unrelated crowd looks like.` };
+  if (e.ownerFundedCount === e.withFirstFunder) {
+    return withLabels(`every one of the ${e.withFirstFunder} sampled raters was first funded by the `
+      + `agent's own owner. Bought from Nansen, independent of our Monad index.`);
+  }
+  if (e.ownerFundedCount > 0) {
+    return withLabels(`${e.ownerFundedCount} of ${e.withFirstFunder} sampled raters were first `
+      + `funded by the agent's own owner, and the rest were not, so this is a mixed record rather `
+      + `than a farm.`);
+  }
+  if (e.sharedFunder) {
+    return withLabels(`${e.sharedFunderCount} of ${e.withFirstFunder} sampled raters share one `
+      + `first funder (${e.sharedFunder}), which is the shape of a funded cluster rather than a `
+      + `crowd.`);
+  }
+  // "Unrelated origins" is a statement about a crowd and says nothing about a single wallet, so
+  // a sample of one gets the narrower claim it actually supports.
+  if (e.withFirstFunder === 1) {
+    return withLabels("the one rater sampled was not first funded by the agent's owner. That is "
+      + "the whole of what was bought here, and one wallet is not a crowd.");
+  }
+  // A label here is the difference between a finding and a false alarm: unrelated origins mean
+  // something quite different when one of those origins is a wallet that funds thousands.
+  return withLabels(`${e.distinctFunders} distinct first funders across ${e.withFirstFunder} `
+    + `sampled raters, which is what unrelated origins look like.`);
 }
 
 /// Plain-language reading of the numbers. Deliberately blunt: the point of the project is that

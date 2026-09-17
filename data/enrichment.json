@@ -6,28 +6,92 @@
   "0x1e50685dd845f87f0b782a13f5825892268a5b1f": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
   "0x17bc4554f4bef84464b3ec2532f611a97c435209": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
   "0x4bfaaa9c5b6e4033bdaae99238ad9a6bfc21d7e1": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
-  "0xc0a053641dbe69de39cc0faddecf0894197a7cb1": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996"
+  "0xc0a053641dbe69de39cc0faddecf0894197a7cb1": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x443cbff015457107fe556dfca8b8684f7ee3cbc4": "0x734b0e337bfa7d4764f4b806b4245dd312ddf134",
+  "0x794c94f1b5e455c1dba27bb28c6085db0fe544f9": "0xdf747918e617c105acd245e6936a9d2e84d932bb",
+  "0xea0b21fb2441464f4920ce3e34d478235605816b": "0x936238391d61067b0480185f7a81834a5bc7a973",
+  "0x071a21c5db495d54de4553d0a294bae2edc9efde": "0x0311a7fdfc7b9017a96c95509e79f2df8db360a5",
+  "0x08908af883f68cd1bd682894b08a37d6817672fd": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0xfd45254d5bd6dae3e82ee8cd663fa3888632e28f": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x0852dcd12a984d910314ce670d691d42908ff7a7": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0xf5d2ada927c882e5b84799328b2db99ba0f93b8c": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x738b90fd284fae515ef0776e9ce0b97468f404f9": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996"
  },
  "agents": {
+  "4": {
+   "checkedAt": "2026-09-17T12:37:36.302Z",
+   "ratersSampled": 3,
+   "withFirstFunder": 3,
+   "distinctFunders": 3,
+   "ownerFundedCount": 1,
+   "sharedFunder": null,
+   "sharedFunderCount": 0,
+   "sharedFunderLabel": null,
+   "sharedFunderIsOwner": false,
+   "funderLabels": {
+    "0xdf747918e617c105acd245e6936a9d2e84d932bb": "​​🤖 Distributor [0xdf7479]"
+   },
+   "usdcSpent": 0.03
+  },
   "9": {
    "checkedAt": "2026-09-16T10:36:47.190Z",
    "ratersSampled": 1,
    "withFirstFunder": 1,
    "distinctFunders": 1,
-   "sharedFunder": "0xb12854e17a5a047b64cc8e4c883eaa43dac2d978",
-   "sharedFunderCount": 1,
+   "sharedFunder": null,
+   "sharedFunderCount": 0,
    "sharedFunderIsOwner": false,
+   "usdcSpent": 0.01,
+   "ownerFundedCount": 0,
+   "sharedFunderLabel": null,
+   "funderLabels": {}
+  },
+  "145": {
+   "checkedAt": "2026-09-17T12:37:36.350Z",
+   "ratersSampled": 1,
+   "withFirstFunder": 1,
+   "distinctFunders": 1,
+   "ownerFundedCount": 0,
+   "sharedFunder": null,
+   "sharedFunderCount": 0,
+   "sharedFunderLabel": null,
+   "sharedFunderIsOwner": false,
+   "funderLabels": {},
+   "usdcSpent": 0.01
+  },
+  "146": {
+   "checkedAt": "2026-09-17T12:37:36.400Z",
+   "ratersSampled": 1,
+   "withFirstFunder": 1,
+   "distinctFunders": 1,
+   "ownerFundedCount": 0,
+   "sharedFunder": null,
+   "sharedFunderCount": 0,
+   "sharedFunderLabel": null,
+   "sharedFunderIsOwner": false,
+   "funderLabels": {},
    "usdcSpent": 0.01
   },
   "182": {
-   "checkedAt": "2026-09-16T10:37:02.236Z",
-   "ratersSampled": 6,
-   "withFirstFunder": 6,
+   "checkedAt": "2026-09-17T12:37:46.412Z",
+   "ratersSampled": 11,
+   "withFirstFunder": 11,
    "distinctFunders": 1,
+   "ownerFundedCount": 11,
    "sharedFunder": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
-   "sharedFunderCount": 6,
+   "sharedFunderCount": 11,
+   "sharedFunderLabel": "[0x97cd97]",
    "sharedFunderIsOwner": true,
-   "usdcSpent": 0.06
+   "funderLabels": {},
+   "usdcSpent": 0.11
   }
+ },
+ "labels": {
+  "0xb12854e17a5a047b64cc8e4c883eaa43dac2d978": "[0xb12854]",
+  "0x97cd97cfe21799bacbf39d0a53469e5f82f30996": "[0x97cd97]",
+  "0x734b0e337bfa7d4764f4b806b4245dd312ddf134": "[0x734b0e]",
+  "0xdf747918e617c105acd245e6936a9d2e84d932bb": "​​🤖 Distributor [0xdf7479]",
+  "0x936238391d61067b0480185f7a81834a5bc7a973": "[0x936238]",
+  "0x0311a7fdfc7b9017a96c95509e79f2df8db360a5": "[0x0311a7]"
  }
 }

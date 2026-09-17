@@ -158,9 +158,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       indexedAt: data.indexedAt,
       covers: data.covers,
       reading:
-        "Of every rating on this chain, the ones that survive both filters — paid before rating, "
-        + "and the rater was never funded by the agent's owner — number "
-        + `${data.totals?.independentPaidRatersNetworkWide ?? 0}.`,
+        "Of every rating on this chain, the ones that survive both filters (paid before rating, "
+        + "and the rater was never funded by the agent's owner) number "
+        + `${data.totals?.independentPaidRatings ?? 0}, and they come from `
+        + `${data.totals?.independentPaidWalletsNetworkWide ?? 0} distinct wallets, because one `
+        + "wallet is the entire independent record of two separate agents.",
     });
   }
 

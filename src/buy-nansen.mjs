@@ -138,6 +138,10 @@ const record = {
   settlementHeader: Boolean(settleHdr),
   onChainTransfers: onChain.length,
   tx: onChain[0]?.transactionHash ?? null,
+  // The whole response, not a 300-character window. A ledger that claims to be the receipt has
+  // to hold what was actually delivered: the truncated version silently cut off Nansen's entity
+  // labels, which is the field that decides whether a shared funder is a farm or an exchange.
+  body: text,
   bodyPreview: text.slice(0, 300),
 };
 mkdirSync("data", { recursive: true });
