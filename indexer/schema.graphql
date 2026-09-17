@@ -1,0 +1,46 @@
+"An agent as the identity registry knows it."
+type Agent {
+  id: ID!                  # agentId as a string
+  owner: String!
+  agentURI: String!
+  registeredAt: BigInt!
+  registeredBlock: BigInt!
+  feedbackCount: Int!
+  raterCount: Int!         # distinct clients, maintained as feedback arrives
+  scoreSum: BigInt!        # sum of value, so an average needs no second pass
+}
+
+"One rating. Kept whole: the value and its decimals are the part the registry's own count hides."
+type Feedback {
+  id: ID!                  # txHash-logIndex
+  agent: Agent!
+  client: String!
+  value: BigInt!
+  valueDecimals: Int!
+  tag1: String!
+  endpoint: String!
+  timestamp: BigInt!
+  block: BigInt!
+}
+
+"A wallet that has rated something, so 'how many agents did this wallet rate' is one lookup."
+type Rater {
+  id: ID!                  # address
+  ratingsGiven: Int!
+  agentsRated: Int!
+  firstRatedAt: BigInt!
+  lastRatedAt: BigInt!
+}
+
+"""
+One row per (agent, rater) pair. It exists so distinct counts are exact rather than guessed:
+counting a rater as new when it differs from the previous one looked cheap and was wrong — agent
+#9 has a single wallet behind 518 ratings and the shortcut reported 375.
+"""
+type AgentRater {
+  id: ID!                  # agentId-client
+  agent: Agent!
+  client: String!
+  ratings: Int!
+  firstAt: BigInt!
+}

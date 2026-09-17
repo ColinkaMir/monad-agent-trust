@@ -1,0 +1,31 @@
+# HyperIndex over the two ERC-8004 registries on Monad mainnet.
+#
+# The provenance pipeline in ../src reads the same events through HyperSync directly, because it
+# also needs a second pass over the owners' transfer history that an event indexer does not model.
+# This indexer covers the registry half properly: typed handlers, a schema other tools can query
+# over GraphQL, and reorg-aware incremental sync instead of our hand-rolled "remember the last
+# block" file.
+name: erc8004-monad
+# Transaction fields are opt-in: without this the handler cannot see the hash, and a rating with
+# no transaction to point at is an assertion rather than a receipt.
+field_selection:
+  transaction_fields:
+    - hash
+networks:
+  - id: 143
+    start_block: 52952790   # both registries were deployed in the same window
+    contracts:
+      - name: IdentityRegistry
+        address:
+          - 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
+        handler: src/EventHandlers.ts
+        events:
+          - event: Registered(uint256 indexed agentId, string agentURI, address indexed owner)
+      - name: ReputationRegistry
+        address:
+          - 0x8004BAa17C55a88189AE136b182e5fdA19dE9b63
+        handler: src/EventHandlers.ts
+        events:
+          # The full shape, taken from the implementation ABI behind the proxy rather than guessed:
+          # the rating VALUE lives here, and our first pass through HyperSync was throwing it away.
+          - event: NewFeedback(uint256 indexed agentId, address indexed clientAddress, uint64 feedbackIndex, int128 value, uint8 valueDecimals, string indexed indexedTag1, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash)
