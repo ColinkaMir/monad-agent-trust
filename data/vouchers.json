@@ -57,6 +57,18 @@
    "nonce": "0x668dc456a37081165aeb01a52097714b80427c657ae945c6336da975bd63454a",
    "signature": "0x74e51acd4b390f633b53d83ca83feda02ffc1c464813126ae359834434bfb37d5fee013b7cc1157f2386396693f86de920a4ca60686e0f97c3ef87dba12dab191b",
    "addedAt": "2026-09-17T14:18:49.328Z",
+   "spentAt": "2026-09-17T14:26:23.016Z",
+   "tx": "0xec4662bd4de96c33c17fced1d33fecbe643caf2d79276c07dce09c7a41e37983"
+  },
+  {
+   "from": "0x963d03886260c1a95ea0f12c875a00763db9f218",
+   "to": "0x93053f1e7a5efeda532fe69cbbe43cbec3a0f13f",
+   "value": "10000",
+   "validAfter": "1789655831",
+   "validBefore": "1789742291",
+   "nonce": "0x7de956aeb859bfed2dacba5a9a4de6dedd403cca7b5928d8804262e54eb6b3b0",
+   "signature": "0xde21a304ad1ade3be9e755a09554f2c1f4fb30a9a5652eafcdbb0c3cb06b5c262f6a96ae0ea7ecf6197c4755e9eeb7f8254addb83d9e350766510daf32a7a8681b",
+   "addedAt": "2026-09-17T14:38:14.460Z",
    "spentAt": null,
    "tx": null
   }

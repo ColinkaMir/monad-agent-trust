@@ -98,7 +98,11 @@ function Answer() {
     setBusy(true); setError(""); setAgent(null); setWallet(null);
     try {
       const isAddress = /^0x[0-9a-fA-F]{40}$/.test(q.trim());
-      const r = await fetch(`${API}/${isAddress ? "wallet" : "agent"}/${q.trim()}`);
+      // Say who is paying. Without this a visitor could sign authorizations all day and never
+      // spend one, because the service will not touch its own purse for an anonymous caller and
+      // had no way to know this caller had already paid for the answer.
+      const payer = isAddress && primaryWallet?.address ? `?payer=${primaryWallet.address}` : "";
+      const r = await fetch(`${API}/${isAddress ? "wallet" : "agent"}/${q.trim()}${payer}`);
       const d = await r.json();
       if (!r.ok) throw new Error(d.error ?? `HTTP ${r.status}`);
       isAddress ? setWallet(d) : setAgent(d);
@@ -127,8 +131,11 @@ function Answer() {
       </div>
       <p className="hint">
         An agent id is answered from our index, free. An address also buys one Nansen signal for
-        $0.01 over x402 on Monad, and the payment is reconciled on chain before it is shown.
-        {primaryWallet ? ` Connected as ${primaryWallet.address.slice(0, 10)}…` : ""}
+        $0.01 over x402 on Monad, paid by one of your delegated authorisations and reconciled on
+        chain before it is shown.
+        {primaryWallet
+          ? ` Asking as ${primaryWallet.address.slice(0, 10)}…, so a delegated question pays for it.`
+          : " Sign in and delegate a question to buy the paid half."}
       </p>
 
       {error && <div className="card bad"><b>could not answer</b><p>{error}</p></div>}
@@ -179,7 +186,8 @@ function Answer() {
             <b>bought signal</b>
             {wallet.purchasedSignal?.bought ? (
               <p>
-                paid ${wallet.purchasedSignal.paidUsdc} USDC ·{" "}
+                paid ${wallet.purchasedSignal.paidUsdc} USDC from{" "}
+                <b>{wallet.purchasedSignal.paidBy ?? "the agent's purse"}</b> ·{" "}
                 {wallet.purchasedSignal.reconciled ? "reconciled on chain" : "NOT found on chain"}{" "}
                 {wallet.purchasedSignal.tx && (
                   <a href={`https://monadexplorer.com/tx/${wallet.purchasedSignal.tx}`} target="_blank">
@@ -188,7 +196,9 @@ function Answer() {
                 )}
               </p>
             ) : (
-              <p>not purchased ({wallet.purchasedSignal?.error ?? "skipped"})</p>
+              // The server explains itself; repeating "skipped" would hide the one sentence that
+              // tells a visitor what to do next.
+              <p>{wallet.purchasedSignal?.why ?? wallet.purchasedSignal?.error ?? "not purchased"}</p>
             )}
             <pre>{wallet.purchasedSignal?.preview}</pre>
           </div>
