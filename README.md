@@ -54,7 +54,9 @@ which is the only reason to trust either.
 **Nansen.** Not a panel of their data; an input to a verdict. `/profiler/address/related-wallets`
 returns a First Funder edge for a wallet, for $0.01, paid over x402 on Monad with no account and no
 key. Six lookups on agent #182 cost six cents and all six returned the same first funder: the
-agent's own owner. A second source, bought rather than assumed, agreeing with the free half.
+agent's own owner. This is not a second opinion on something we already knew: a Monad index can
+only see funding that happened on Monad, so without the purchase an owner who funds their raters
+from any other chain reads as absent, and the agent reads as clean.
 
 **Dynamic.** The wallet does work. Every wallet question costs real money out of the agent's
 address, and when it runs dry the service stops answering, so the page shows the balance as *how
@@ -97,20 +99,22 @@ cd indexer && ENVIO_API_TOKEN=... pnpm envio dev  # HyperIndex + GraphQL on :808
 
 `~/.envio-token` for HyperSync, a funded Monad wallet for the x402 purchases. Nothing else.
 
-## What this is not
+## What is new, and what we checked before building
 
-It is not a new idea. Trust verdicts for agents are sold over x402 on Base today (PHION, KYA,
-biii), fulfilment verification exists (vet402), and shared first-funder provenance as a Sybil
-detector is published research (arXiv 2606.26028, which measured coordinated reviewers at 73.5%,
-59.2% and 90.6% on Ethereum, BSC and Base).
+New is the combination: a trust answer whose inputs are bought one call at a time, priced, and
+published with the bill attached. We went looking for that on any chain and did not find it. New
+also are the chain and the evidence. No agent-trust service exists on Monad (of 1,533 live x402
+resources there, seven domains sell anything at all and none of them sell this), and the February
+farm is our own measurement, published on 10 September, inside this build window.
 
-What is new here is the chain and the evidence. No agent-trust service exists on Monad: of 1,533
-live x402 resources there, seven domains sell anything at all and none of them sell this. The
-February farm is our own measurement, published before this project existed. And the mechanic of
-paying per call for the inputs to a trust answer, with the bill in public, we have not found
-anywhere.
+The parts are old, and we checked them first rather than afterwards. Trust verdicts for agents are
+sold over x402 on Base today (PHION, KYA, biii), fulfilment verification exists (vet402), and
+shared first-funder provenance as a Sybil detector is published research (arXiv 2606.26028, which
+measured coordinated reviewers at 73.5%, 59.2% and 90.6% on Ethereum, BSC and Base). Two earlier
+directions of ours died on that same check before a line of code was written, which is what the
+check is for.
 
-Limits worth stating: provenance is computed for agents with at least five ratings (28 agents,
+Limits: provenance is computed for agents with at least five ratings (28 agents,
 9,118 of 9,188 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
 so the count of three independent raters is an upper bound rather than a floor.

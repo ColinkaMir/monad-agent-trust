@@ -1,10 +1,12 @@
 // Buys one Nansen signal about a wallet, per call, over x402 on Monad.
 //
 // Why this exists rather than an API key: Nansen sells its Pro endpoints over x402 in USDC on
-// Base, Solana and Monad, permissionless, $0.01 for the basic tier. So the service does not
-// hold a subscription, it pays per question — and, being an agent-facing service, it is asked
-// questions by other agents who pay us the same way. The money in and the money out are the
-// same rail, which is the point.
+// Base, Solana and Monad, permissionless, $0.01 for the basic tier. So the service holds no
+// subscription, it pays per question, and the cost of any single answer is a number it can show
+// instead of a monthly bill it amortises into nothing.
+// Note on what this does NOT yet do: the service does not charge its own callers over x402. Until
+// it does, money flows in on one rail and out on another, and saying otherwise would be a claim
+// the code does not back.
 //
 // The reconciliation is not decoration. In our September survey of every x402 seller on Monad,
 // 7 of 19 paid calls returned an error after taking the money, and one returned HTTP 200 with

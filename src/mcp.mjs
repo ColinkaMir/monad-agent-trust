@@ -121,7 +121,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         ? { source: "Nansen first-funder, bought over x402", usdcSpent: e.usdcSpent,
             ratersSampled: e.ratersSampled, distinctFunders: e.distinctFunders,
             sharedFunderIsOwner: e.sharedFunderIsOwner }
-        : { source: "not purchased for this agent", note: "the computed half stands on its own" },
+        : { source: "not purchased for this agent",
+            note: "so the owner-funding question here is answered from Monad alone, which cannot "
+                + "see a rater funded on another chain. Buy the first-funder edge to close that." },
       indexedAt: data.indexedAt, method: data.method,
     });
   }

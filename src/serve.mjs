@@ -40,7 +40,14 @@ const enrichment = () =>
 /// Nansen's first-funder edge says who funded it first ANYWHERE, which is the question a farm
 /// would have to defeat on every chain at once.
 function corroboration(e) {
-  if (!e) return null;
+  // Say what is missing rather than returning nothing: without a bought first-funder edge the
+  // owner-funding question is answered from Monad alone, and Monad alone cannot see a rater that
+  // was funded on some other chain. That gap is the reason the purchase exists.
+  if (!e) return {
+    bought: false,
+    gap: "not bought for this agent, so the owner-funding answer here sees only Monad and would "
+       + "miss a rater funded on another chain",
+  };
   if (e.sharedFunderIsOwner) {
     return {
       bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled,
