@@ -205,12 +205,28 @@ createServer(async (req, res) => {
     const lines = existsSync("data/purchases.jsonl")
       ? readFileSync("data/purchases.jsonl", "utf8").trim().split("\n").filter(Boolean).map(JSON.parse)
       : [];
+    // The bill is the chain's number, not the ledger's. The per-call ledger once over-counted
+    // itself by four cents (a rejected call booked a neighbour's transfer), which is why the
+    // settled figures come from the full on-chain pass in src/reconcile.mjs when it has run.
+    const settled = existsSync("data/settlement.json")
+      ? JSON.parse(readFileSync("data/settlement.json", "utf8"))
+      : null;
     return json(res, 200, {
       calls: lines.length,
-      usdcSpent: +lines.reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
+      usdcSpent: settled
+        ? settled.totalUsdc
+        : +lines.reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
+      usdcAuthorized: +lines.reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
       delivered: lines.filter((l) => l.delivered).length,
-      paidButNotDelivered: lines.filter((l) => !l.delivered && l.onChainTransfers > 0).length,
+      paidButNotDelivered: settled
+        ? settled.unassignedTransfers
+        : lines.filter((l) => !l.delivered && l.onChainTransfers > 0).length,
       missingSettlementHeader: lines.filter((l) => l.delivered && !l.settlementHeader).length,
+      reconciledAt: settled?.reconciledAt ?? null,
+      note: settled
+        ? "usdcSpent is the sum of USDC transfers on chain; usdcAuthorized is what the signed "
+          + "x402 authorizations added up to. The gap is calls rejected before settlement."
+        : "run src/reconcile.mjs for the on-chain figure; until then usdcSpent trusts the ledger",
       purchases: lines.slice(-25),
     });
   }

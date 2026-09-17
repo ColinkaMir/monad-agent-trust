@@ -66,12 +66,21 @@ in the confirmation dialog. Sign-in creates the wallet; the transfer is what it 
 The service pays for its answers and publishes what that cost, because a service that judges other
 people's honesty should not hide its own inputs. `GET /spend` at any moment; at the time of writing:
 
-**15 calls, $0.15 spent, 11 delivered, 1 paid and nothing returned.**
+**15 calls, 11 delivered, and the chain says $0.11.**
 
-That last column is not an accident of ours. In our September survey of every x402 seller on Monad,
-7 of 19 paid calls took the money and answered with an error, and one returned HTTP 200 with no
-settlement header, so a client trusting the header under-counted its own spending. Every purchase
-here is reconciled against USDC transfer logs instead.
+Our own per-call ledger first said $0.15 with one call "paid and nothing returned". Both figures
+were wrong: four rejected calls never settled at all, and one of them had booked a neighbouring
+call's transfer because its reconciliation window opened five blocks before the request. The full
+on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer:
+eleven transfers for eleven answers, and Nansen never took a cent it did not answer for. The wrong
+ledger stays in the repo history on purpose, because it is the project's thesis demonstrated on
+the project itself: every count is produced by someone, including ours, and the chain is the only
+book that balances.
+
+The wider point stands on the other sellers: in our September survey of every x402 seller on
+Monad, 7 of 19 paid calls took the money and answered with an error, and one returned HTTP 200
+with no settlement header, so a client trusting the seller's accounting mis-counts its own
+spending in both directions.
 
 ## Running it
 
@@ -79,6 +88,7 @@ here is reconciled against USDC transfer logs instead.
 node src/index-erc8004.mjs          # index (add --full to rebuild from the deploy block)
 node src/score.mjs                  # compute provenance -> data/provenance.json
 node src/enrich-nansen.mjs 182 --live --sample 6   # buy first-funder edges, $0.01 each
+node src/reconcile.mjs              # re-derive the bill from USDC transfer logs -> data/settlement.json
 node src/serve.mjs                  # HTTP on :8460
 node src/mcp.mjs                    # MCP over stdio
 cd web && npm run build && npm run preview        # the page

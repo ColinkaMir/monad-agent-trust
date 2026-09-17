@@ -20,7 +20,8 @@
 import { HypersyncClient, LogField, TransactionField, BlockField } from "@envio-dev/hypersync-client";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 
-const TOKEN = readFileSync("/home/solana/.envio-token", "utf8").trim();
+const TOKEN = process.env.ENVIO_API_TOKEN
+  ?? readFileSync(`${process.env.HOME}/.envio-token`, "utf8").trim();
 const IDENTITY = "0x8004a169fb4a3325136eb29fa0ceb6d2e539a432";
 const REPUTATION = "0x8004baa17c55a88189ae136b182e5fda19de9b63";
 const DEPLOY_BLOCK = 52952790;

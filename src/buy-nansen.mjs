@@ -12,12 +12,13 @@
 // the chain, not the seller's headers.
 //
 //   node src/buy-nansen.mjs <address> [--live]
-import { ethers } from "/home/solana/most-work/nad-agent/node_modules/ethers/lib.esm/index.js";
-import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
+import { ethers } from "ethers";
+import { readFileSync, appendFileSync, mkdirSync, existsSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 const RPC = "https://rpc.monad.xyz";
-const KEY = "/home/solana/.monad-testnet-ops-key"; // same ops wallet signs on mainnet; it paid the September round
+// same ops wallet signs on mainnet; it paid the September round
+const KEY = process.env.X402_KEY_FILE ?? `${process.env.HOME}/.monad-testnet-ops-key`;
 const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
 const LEDGER = "data/purchases.jsonl";
 // A basic-tier Nansen call is $0.01. Anything above this is not the offer we agreed to.
@@ -42,8 +43,10 @@ const CHAIN = process.env.NANSEN_CHAIN ?? "ethereum";
 const BODIES = {
   "first-funder": (addr) => ({ address: addr, chain: "all" }),
   // related-wallets refuses chain "all" and wants a named chain; its valid list does include
-  // monad. Worth knowing before you call it: on a rejected body this endpoint CHARGES anyway
-  // and answers 422 without a settlement header, unlike first-funder which validates first.
+  // monad. (An earlier note here claimed it charges for rejected bodies. The chain says
+  // otherwise: that ledger row had booked a neighbouring call's transfer, because the
+  // reconciliation window used to open five blocks before the request. src/reconcile.mjs
+  // is the full-pass check that caught it.)
   "related-wallets": (addr) => ({ address: addr, chain: process.env.NANSEN_CHAIN ?? "monad" }),
   "counterparties": (addr) => ({ address: addr, chain: CHAIN,
                                  pagination: { page: 1, per_page: 20 } }),
@@ -112,9 +115,16 @@ const text = await res.text();
 // Reconcile against the chain: the seller's settlement header is a claim, a USDC Transfer log
 // from our wallet to theirs is a fact.
 const usdc = new ethers.Contract(USDC, ["event Transfer(address indexed from, address indexed to, uint256 value)"], provider);
+// Two guards, both learned the hard way: settlement cannot land before the request was sent, and
+// a transfer already claimed by an earlier ledger row is not ours. Without them, back-to-back
+// calls each "find" their neighbour's transfer and a rejected call books a payment that never
+// happened. src/reconcile.mjs is the full-pass version of this check.
+const claimed = new Set(
+  (existsSync(LEDGER) ? readFileSync(LEDGER, "utf8").trim().split("\n").filter(Boolean) : [])
+    .map((l) => JSON.parse(l).tx).filter(Boolean));
 const logs = await usdc.queryFilter(usdc.filters.Transfer(wallet.address, accepted.payTo),
-                                    blockBefore - 5, "latest").catch(() => []);
-const onChain = logs.filter((l) => l.args?.value === amount);
+                                    blockBefore, "latest").catch(() => []);
+const onChain = logs.filter((l) => l.args?.value === amount && !claimed.has(l.transactionHash));
 
 const record = {
   at: new Date().toISOString(),

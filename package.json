@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@envio-dev/hypersync-client": "^1.4.1",
-    "@modelcontextprotocol/sdk": "^1.30.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ethers": "^6.17.0"
   }
 }
