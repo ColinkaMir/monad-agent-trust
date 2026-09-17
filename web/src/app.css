@@ -106,3 +106,31 @@ footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; line-height: 1
 }
 .bought-line b { font-family: ui-monospace, monospace; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .bought-line p { color: var(--ink2); font-size: .88rem; line-height: 1.55; margin-top: .3rem; }
+
+/* The rating field. Deliberately plain around the canvas: the picture is the argument, and
+   chrome around it would read as decoration on evidence. */
+.farm { margin: 2.5rem 0; }
+.farm h2 { font-size: 1.15rem; margin-bottom: .55rem; }
+.farm-lead { color: var(--ink2); font-size: .9rem; line-height: 1.6; max-width: 46rem; margin-bottom: 1rem; }
+.farm-box { position: relative; background: var(--panel); border: 1px solid var(--line);
+            border-radius: 12px; padding: .75rem; overflow: hidden; }
+.farm-box canvas { display: block; cursor: crosshair; }
+.farm-tip { position: absolute; pointer-events: none; background: #0b1020; color: var(--ink);
+            border: 1px solid var(--line); border-radius: 9px; padding: .5rem .6rem;
+            font-size: .76rem; line-height: 1.45; max-width: 15rem; box-shadow: 0 8px 22px rgba(0,0,0,.5); }
+.farm-tip-v { margin-left: .4rem; color: var(--accent); text-transform: uppercase;
+              letter-spacing: .04em; font-size: .66rem; }
+.farm-tip-m { color: var(--muted); margin-top: .2rem; }
+.farm-key { list-style: none; margin-top: .9rem; display: grid; gap: .35rem; }
+.farm-key li { display: flex; align-items: baseline; gap: .5rem; font-size: .82rem; color: var(--ink2); }
+.farm-key i { width: .62rem; height: .62rem; border-radius: 2px; flex: none; transform: translateY(1px); }
+.farm-key b { font-variant-numeric: tabular-nums; min-width: 3.4rem; text-align: right; color: var(--ink); }
+.farm-key-pct { color: var(--muted); min-width: 3.6rem; font-variant-numeric: tabular-nums; }
+.farm-loop { margin-top: 1.4rem; border-top: 1px solid var(--line); padding-top: 1.1rem; }
+.farm-loop h3 { font-size: .95rem; margin-bottom: .7rem; }
+.farm-loop-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.farm-step { background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+             padding: .3rem .7rem; font-size: .78rem; }
+.farm-loop-row em { color: var(--accent); font-style: normal; font-size: .78rem;
+                    font-variant-numeric: tabular-nums; }
+.farm-loop-note { color: var(--ink2); font-size: .85rem; line-height: 1.6; margin-top: .7rem; max-width: 46rem; }

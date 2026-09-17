@@ -6,6 +6,7 @@ import {
 } from "@dynamic-labs/sdk-react-core";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { FundAgent } from "./FundAgent";
+import { FarmMap } from "./FarmMap";
 import "./app.css";
 
 const API = import.meta.env.VITE_API ?? "http://localhost:8460";
@@ -203,13 +204,14 @@ export default function App() {
             <p className="lead">
               ERC-8004 counts ratings. On Monad that count is self-produced: 99.7% of all feedback
               landed in three days of February, and on the most-rated agent every rater had been
-              funded by that agent's own owner minutes before rating it. This asks the two questions
+              funded by that agent's own owner eight seconds before rating it. This asks the two questions
               the registry cannot: did the rater pay first, and whose money was it.
             </p>
           </div>
           {ENV_ID ? <DynamicWidget /> : <div className="nokey">set VITE_DYNAMIC_ENV_ID to enable sign-in</div>}
         </header>
         <Answer />
+        <FarmMap />
         <FundAgent />
         <Bill />
         <footer>

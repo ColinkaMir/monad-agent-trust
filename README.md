@@ -9,8 +9,9 @@ The registry counts ratings. On Monad that count is self-produced:
 - **9,188** ratings in total, and **99.7% of them landed in three days of February 2026**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
-- Across the whole chain, ratings that survive both provenance filters: **3, from 2 wallets**, and
-  buying the funding history of those two leaves **one** that nothing is known against
+- Across the whole chain, ratings that survive both provenance filters: **16 of 9,188, or 0.17%**,
+  and they come from **2 wallets**. Buying the funding history of those two leaves **one** that
+  nothing is known against
 
 So this asks the two questions the registry cannot answer, and answers them in words rather than
 with a score out of a hundred, because a score invites exactly the mistake this exists to correct:
@@ -43,6 +44,7 @@ wallet that was paid to hold an opinion.
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
 | **Buy** | The one fact Monad cannot show: who funded a rater *first, anywhere*. Bought from Nansen for $0.01 a call over x402, on Monad |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
+| **Show** | All 9,188 ratings drawn one dot each, because the claim is a ratio of 16 to 9,188 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `burst`, `partly-backed`, `thin`, or `not covered`, each
 with the sentence that justifies it. `not covered` is a real answer: 84 of 10,252 agents have ever
@@ -121,6 +123,7 @@ node src/index-erc8004.mjs          # index (add --full to rebuild from the depl
 node src/score.mjs                  # compute provenance -> data/provenance.json
 node src/enrich-nansen.mjs 182 --live --sample 6   # buy first-funder edges, $0.01 each
 node src/reconcile.mjs              # re-derive the bill from USDC transfer logs -> data/settlement.json
+node src/farm-map.mjs               # classify every rating for the picture -> web/public/farm.json
 node src/serve.mjs                  # HTTP on :8460
 node src/mcp.mjs                    # MCP over stdio
 cd web && npm run build && npm run preview        # the page
