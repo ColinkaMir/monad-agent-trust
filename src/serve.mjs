@@ -217,7 +217,7 @@ createServer(async (req, res) => {
     const who = parsed.vouchers?.[0]?.from;
     return json(res, 200, {
       ...result,
-      summary: who ? vouchers.summary(who) : null,
+      summary: who ? await vouchers.fundedSummary(who, new ethers.JsonRpcProvider(RPC)) : null,
       note: "each voucher pays Nansen directly when a question of yours is answered. The money "
           + "never passes through this service, and unspent vouchers can be cancelled on chain "
           + "with cancelAuthorization(authorizer, nonce, v, r, s) on USDC.",
@@ -225,7 +225,13 @@ createServer(async (req, res) => {
   }
 
   const delegationMatch = p.match(/^\/delegation\/(0x[0-9a-fA-F]{40})$/);
-  if (delegationMatch) return json(res, 200, vouchers.summary(delegationMatch[1]));
+  if (delegationMatch) {
+    // Reports signed and affordable as two numbers. They differ whenever a wallet signed an
+    // authorization it cannot cover, which is a normal thing to do by accident and a dishonest
+    // thing for us to hide behind a single count.
+    return json(res, 200, await vouchers.fundedSummary(
+      delegationMatch[1], new ethers.JsonRpcProvider(RPC)));
+  }
 
   if (p === "/" || p === "/health") {
     return json(res, 200, {
@@ -270,7 +276,9 @@ createServer(async (req, res) => {
     // down refresh. A purchase happens when the caller brought their own delegated voucher, or
     // when the operator explicitly allows the house to pay (AGENT_PAYS_FOR_STRANGERS=1).
     const HOUSE_PAYS = process.env.AGENT_PAYS_FOR_STRANGERS === "1";
-    const delegated = namedPayer ? vouchers.summary(namedPayer).questionsLeft > 0 : false;
+    const delegated = namedPayer
+      ? (await vouchers.fundedSummary(namedPayer, new ethers.JsonRpcProvider(RPC))).affordable > 0
+      : false;
     let signal;
     if (url.searchParams.get("buy") === "0") {
       signal = { bought: false, skipped: true };
@@ -280,7 +288,8 @@ createServer(async (req, res) => {
       signal = {
         bought: false,
         why: namedPayer
-          ? "that address has no unspent delegated questions left"
+          ? "that address has no delegated question it can currently pay for: either none are "
+            + "left, or the wallet that signed them has no USDC on Monad"
           : "a purchased signal costs $0.01 of real USDC, so it is not spent for anonymous "
             + "callers. Delegate a question first, then ask again with ?payer=<your address>.",
         delegate: "POST /delegate",

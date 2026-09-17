@@ -32,6 +32,9 @@ const CANCEL_ABI = [{
 type Summary = {
   address: string; delegated: number; spent: number; expired: number;
   questionsLeft: number; usdcLeft: number; expiresAt: string | null; nonces: string[];
+  // Signed and payable are different numbers: an authorization from an empty wallet verifies
+  // perfectly and settles never.
+  usdcBalance: number | null; affordable: number | null; unfunded?: number;
 };
 
 const randomNonce = () => {
@@ -171,10 +174,20 @@ export function Delegate() {
       </div>
       <p className="fund-line">
         {summary
-          ? <><b>{summary.questionsLeft} left</b> of {summary.delegated} signed, {summary.spent} spent
-              {summary.expired ? `, ${summary.expired} expired` : ""}. Worth ${summary.usdcLeft.toFixed(2)}.</>
+          ? <><b>{summary.affordable ?? summary.questionsLeft} ready</b> of {summary.questionsLeft} signed
+              {summary.spent ? `, ${summary.spent} spent` : ""}
+              {summary.expired ? `, ${summary.expired} expired` : ""}.
+              {" "}Your wallet holds ${(summary.usdcBalance ?? 0).toFixed(2)} USDC.</>
           : <>nothing delegated yet.</>}
       </p>
+      {Boolean(summary?.unfunded) && (
+        <p className="fund-err">
+          {summary!.unfunded} signed {summary!.unfunded === 1 ? "authorisation" : "authorisations"} cannot
+          be paid: this wallet has ${(summary!.usdcBalance ?? 0).toFixed(2)} USDC on Monad. A signature is a
+          promise about money, not money. Send USDC to{" "}
+          <span className="mono">{address}</span> and they become spendable, with no need to sign again.
+        </p>
+      )}
       <div className="fund-act">
         <input value={count} onChange={(e) => setCount(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
                inputMode="numeric" />

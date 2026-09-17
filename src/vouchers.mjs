@@ -121,6 +121,32 @@ export function summary(address, now = Math.floor(Date.now() / 1000)) {
   };
 }
 
+/// What the signer can actually pay right now. A signature is a promise about money, not money:
+/// an authorization from an empty wallet verifies perfectly and settles never. Counting those as
+/// available questions would be this project publishing exactly the kind of unbacked total it was
+/// built to expose, so the balance is asked for and reported.
+export async function balanceOf(address, provider) {
+  const usdc = new ethers.Contract(
+    USDC, ["function balanceOf(address) view returns (uint256)"], provider);
+  try { return BigInt(await usdc.balanceOf(address)); } catch { return null; }
+}
+
+/// Signed vouchers, minus the ones the signer cannot currently cover. Returns both numbers,
+/// because "you signed for five and can pay for two" is the honest sentence.
+export async function fundedSummary(address, provider) {
+  const base = summary(address);
+  const balance = await balanceOf(address, provider);
+  if (balance === null) return { ...base, usdcBalance: null, affordable: null };
+  const each = 10_000n;
+  const affordable = Math.min(base.questionsLeft, Number(balance / each));
+  return {
+    ...base,
+    usdcBalance: +(Number(balance) / 1e6).toFixed(6),
+    affordable,
+    unfunded: base.questionsLeft - affordable,
+  };
+}
+
 /// Picks one unspent voucher that matches what the seller is actually asking for right now, and
 /// confirms with the chain that it has not been used or cancelled since we stored it.
 ///
@@ -136,6 +162,12 @@ export async function pick(address, { payTo, amount, provider }, now = Math.floo
     v.from === a && !v.spentAt && Number(v.validBefore) > now + 30
     && v.to === payTo.toLowerCase() && BigInt(v.value) === want);
   if (!candidates.length) return null;
+
+  // An authorization the signer cannot cover would be handed to the facilitator, fail at
+  // settlement, and cost a request and a confusing error. Check the money before spending the
+  // promise.
+  const balance = await balanceOf(a, provider);
+  if (balance !== null && balance < want) return null;
 
   const usdc = new ethers.Contract(
     USDC, ["function authorizationState(address,bytes32) view returns (bool)"], provider);

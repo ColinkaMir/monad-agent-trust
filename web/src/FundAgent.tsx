@@ -52,7 +52,13 @@ export function FundAgent() {
       // the transfer look like it failed.
       setTimeout(refresh, 4000);
     } catch (e: any) {
-      setState({ error: String(e?.shortMessage ?? e?.message ?? e).slice(0, 180) });
+      // The raw revert is "ERC20: transfer amount exceeds balance", which tells a visitor who has
+      // just created a fresh wallet nothing about what went wrong or what to do next.
+      const raw = String(e?.shortMessage ?? e?.message ?? e);
+      setState({ error: /exceeds balance|insufficient funds/i.test(raw)
+        ? `Your wallet does not hold ${amount} USDC on Monad. A wallet made a moment ago is empty; `
+          + "send it USDC first, or skip this and read the free half of every answer."
+        : raw.slice(0, 180) });
     }
   };
 
