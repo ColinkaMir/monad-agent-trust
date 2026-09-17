@@ -1,0 +1,33 @@
+{
+ "funders": {
+  "0xd8a01de3d27bd6fb0df99e7ca94ec69c5dabe38c": "0xb12854e17a5a047b64cc8e4c883eaa43dac2d978",
+  "0xe268cf3fac7adb7a5bbb1daabaaa03946671b598": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0xa64022d9b0f7abefdd1c97a7ec1aa95333ec3e3d": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x1e50685dd845f87f0b782a13f5825892268a5b1f": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x17bc4554f4bef84464b3ec2532f611a97c435209": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0x4bfaaa9c5b6e4033bdaae99238ad9a6bfc21d7e1": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+  "0xc0a053641dbe69de39cc0faddecf0894197a7cb1": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996"
+ },
+ "agents": {
+  "9": {
+   "checkedAt": "2026-09-16T10:36:47.190Z",
+   "ratersSampled": 1,
+   "withFirstFunder": 1,
+   "distinctFunders": 1,
+   "sharedFunder": "0xb12854e17a5a047b64cc8e4c883eaa43dac2d978",
+   "sharedFunderCount": 1,
+   "sharedFunderIsOwner": false,
+   "usdcSpent": 0.01
+  },
+  "182": {
+   "checkedAt": "2026-09-16T10:37:02.236Z",
+   "ratersSampled": 6,
+   "withFirstFunder": 6,
+   "distinctFunders": 1,
+   "sharedFunder": "0x97cd97cfe21799bacbf39d0a53469e5f82f30996",
+   "sharedFunderCount": 6,
+   "sharedFunderIsOwner": true,
+   "usdcSpent": 0.06
+  }
+ }
+}
