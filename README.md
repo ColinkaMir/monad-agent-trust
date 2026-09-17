@@ -84,10 +84,28 @@ lookups, eleven cents, and every one of the eleven raters was first funded by th
 owner. Two sources of different kinds reaching the same answer is the only reason to believe
 either.
 
-**Dynamic.** The wallet does work. Every wallet question costs real money out of the agent's
-address, and when it runs dry the service stops answering, so the page shows the balance as *how
-many more questions it can afford* and lets a visitor top it up with a USDC transfer they approve
-in the confirmation dialog. Sign-in creates the wallet; the transfer is what it is for.
+**Dynamic.** Sign-in creates a wallet; what the wallet then does is delegate spending, which is a
+different thing from holding a balance.
+
+The first version had visitors top up the agent's purse with a USDC transfer. That is custodial,
+unbounded and gone once sent. Now a visitor signs one EIP-3009 authorization per question they
+want, $0.01 each, valid for a day. The agent spends them one at a time, and each payment moves
+from the visitor straight to Nansen: we never hold anyone's money, the ceiling is exactly what was
+signed rather than an allowance somebody could drain, and unspent authorizations are cancelled
+with `cancelAuthorization` on USDC, which is a transaction the visitor sends rather than a favour
+we grant. Verified on Monad mainnet before it was built on: a dummy signature to that function
+reverts with `FiatTokenV2: invalid signature`, while a function that does not exist reverts with
+no data at all.
+
+The open question was whether a facilitator would settle an authorization signed hours earlier,
+since an ordinary x402 payment is signed seconds before it is spent and given a five-minute
+window. It does: a voucher with a 24-hour window settled against Nansen's live endpoint, tx
+`0xb38442db…`. That is the whole mechanism, tested with real money rather than assumed.
+
+Both Dynamic primitives are in play, which is what their brief asks for: an embedded wallet for
+the visitor, an agent wallet that executes, and delegated access between them. `POST /delegate`
+takes the signatures, `GET /delegation/:address` says what is left, and an answer states whose
+money paid for it.
 
 ## Our own bill
 
@@ -127,6 +145,7 @@ node src/reconcile.mjs              # re-derive the bill from USDC transfer logs
 node src/farm-map.mjs               # classify every rating for the picture -> web/public/farm.json
 node src/serve.mjs                  # HTTP on :8460
 node src/mcp.mjs                    # MCP over stdio
+curl 'localhost:8460/wallet/0xabc…?payer=0xyou'   # spends one of the payer's delegated vouchers
 cd web && npm run build && npm run preview        # the page
 cd indexer && ENVIO_API_TOKEN=... pnpm envio dev  # HyperIndex + GraphQL on :8080
 ```

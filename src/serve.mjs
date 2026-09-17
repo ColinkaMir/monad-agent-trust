@@ -12,6 +12,11 @@
 import { createServer } from "node:http";
 import { readFileSync, existsSync, appendFileSync } from "node:fs";
 import { execFile } from "node:child_process";
+import { writeFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ethers } from "ethers";
+import * as vouchers from "./vouchers.mjs";
 import { promisify } from "node:util";
 
 const run = promisify(execFile);
@@ -21,6 +26,11 @@ const RPC = process.env.MONAD_RPC ?? "https://rpc.monad.xyz";
 const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
 // The wallet that pays for x402 calls. Public by nature: every purchase it makes is on chain.
 const AGENT_WALLET = process.env.AGENT_WALLET ?? "0x9E66867adfDC613891A96d82a53988829cD39004";
+// What a visitor's voucher has to match to be spendable. Checked again against the live offer
+// inside buy-nansen.mjs, because a price that moved between the signature and the spend must
+// stop the payment rather than quietly cost the signer more than they agreed to.
+const NANSEN_PAYTO = process.env.NANSEN_PAYTO ?? "0x93053f1e7A5eFEDa532Fe69CbbE43cBEc3A0F13f";
+const NANSEN_PRICE = process.env.NANSEN_PRICE ?? "10000";
 const walletCache = new Map();
 
 const load = () =>
@@ -114,11 +124,30 @@ function verdict(a) {
   return { verdict: "thin", why: "ratings exist but nothing in them is payment-backed." };
 }
 
-async function walletSignal(addr) {
+/// Buys one signal about `addr`. If `payer` has delegated vouchers, one of theirs is spent and
+/// the money goes straight from them to Nansen; otherwise the agent pays out of its own purse.
+///
+/// The visitor's voucher is preferred deliberately. A question asked by somebody who delegated
+/// should cost them, not the house, and the answer can then say whose money settled it.
+async function walletSignal(addr, payer = null) {
   const hit = walletCache.get(addr.toLowerCase());
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return { ...hit.data, cached: true };
+  let voucher = null, voucherFile = null;
+  if (payer) {
+    try {
+      voucher = await vouchers.pick(payer, {
+        payTo: NANSEN_PAYTO, amount: NANSEN_PRICE,
+        provider: new ethers.JsonRpcProvider(RPC),
+      });
+    } catch { voucher = null; }
+    if (voucher) {
+      voucherFile = join(tmpdir(), `voucher-${voucher.nonce.slice(2, 14)}.json`);
+      writeFileSync(voucherFile, JSON.stringify(voucher));
+    }
+  }
   try {
-    const { stdout } = await run("node", ["src/buy-nansen.mjs", addr, "--live"], { timeout: 60_000 });
+    const { stdout } = await run("node", ["src/buy-nansen.mjs", addr, "--live"],
+      { timeout: 60_000, env: voucherFile ? { ...process.env, X402_VOUCHER: voucherFile } : process.env });
     const line = existsSync("data/purchases.jsonl")
       ? readFileSync("data/purchases.jsonl", "utf8").trim().split("\n").pop() : null;
     const rec = line ? JSON.parse(line) : null;
@@ -128,12 +157,18 @@ async function walletSignal(addr) {
       tx: rec?.tx ?? null,
       reconciled: (rec?.onChainTransfers ?? 0) > 0,
       delivered: rec?.delivered ?? false,
+      paidBy: voucher ? "your delegated voucher" : "the agent's own purse",
+      payer: rec?.payer ?? null,
       preview: rec?.bodyPreview?.slice(0, 200) ?? stdout.slice(-200),
     };
+    if (voucher) vouchers.markSpent(voucher.nonce, voucher.from, rec?.tx ?? null);
     walletCache.set(addr.toLowerCase(), { at: Date.now(), data });
     return data;
   } catch (e) {
     return { bought: false, error: String(e.message ?? e).slice(0, 200) };
+  } finally {
+    // The signature is a bearer instrument for one payment; it does not linger in /tmp.
+    if (voucherFile) { try { unlinkSync(voucherFile); } catch {} }
   }
 }
 
@@ -152,13 +187,51 @@ createServer(async (req, res) => {
   const p = url.pathname;
   const prov = load();
 
+  // The page is served from somewhere else, so the browser asks permission before POSTing a
+  // signature to us.
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "content-type",
+      "Access-Control-Max-Age": "86400",
+    });
+    return res.end();
+  }
+
+  // Delegation: a visitor hands over signed authorizations instead of a balance. Nothing is
+  // trusted here except the signatures, and vouchers.check discards any that do not recover to
+  // the address that claims to have signed them.
+  if (p === "/delegate" && req.method === "POST") {
+    let body = "";
+    for await (const chunk of req) {
+      body += chunk;
+      if (body.length > 256_000) { req.destroy(); return; }
+    }
+    let parsed;
+    try { parsed = JSON.parse(body); } catch { return json(res, 400, { error: "body is not JSON" }); }
+    const result = vouchers.accept(parsed.vouchers);
+    const who = parsed.vouchers?.[0]?.from;
+    return json(res, 200, {
+      ...result,
+      summary: who ? vouchers.summary(who) : null,
+      note: "each voucher pays Nansen directly when a question of yours is answered. The money "
+          + "never passes through this service, and unspent vouchers can be cancelled on chain "
+          + "with cancelAuthorization(authorizer, nonce, v, r, s) on USDC.",
+    });
+  }
+
+  const delegationMatch = p.match(/^\/delegation\/(0x[0-9a-fA-F]{40})$/);
+  if (delegationMatch) return json(res, 200, vouchers.summary(delegationMatch[1]));
+
   if (p === "/" || p === "/health") {
     return json(res, 200, {
       service: "agent-trust",
       about: "Provenance of ERC-8004 reputation on Monad, with wallet signals bought per call over x402.",
       indexedAt: prov.indexedAt ?? null,
       totals: prov.totals,
-      endpoints: ["/agent/:id", "/wallet/:address", "/agents", "/spend", "/agent-wallet"],
+      endpoints: ["/agent/:id", "/wallet/:address", "/agents", "/spend", "/agent-wallet",
+                  "/delegate (POST)", "/delegation/:address"],
     });
   }
 
@@ -184,8 +257,13 @@ createServer(async (req, res) => {
   if (walletMatch) {
     const addr = walletMatch[1];
     const owned = prov.agents.filter((a) => a.owner?.toLowerCase() === addr.toLowerCase());
-    const signal = url.searchParams.get("buy") === "0" ? { bought: false, skipped: true }
-                                                       : await walletSignal(addr);
+    // ?payer= names who should pay for this answer. It is not an identity claim and nothing is
+    // taken on its word: it only selects among vouchers that address already signed, so naming
+    // somebody else's address can spend nothing that they did not authorise for exactly this.
+    const payer = url.searchParams.get("payer");
+    const signal = url.searchParams.get("buy") === "0"
+      ? { bought: false, skipped: true }
+      : await walletSignal(addr, /^0x[0-9a-fA-F]{40}$/.test(payer ?? "") ? payer : null);
     return json(res, 200, {
       address: addr,
       ownsRatedAgents: owned.map((a) => ({ agentId: a.agentId, ...verdict(a) })),

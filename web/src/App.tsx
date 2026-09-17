@@ -7,6 +7,7 @@ import {
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { FundAgent } from "./FundAgent";
 import { FarmMap } from "./FarmMap";
+import { Delegate } from "./Delegate";
 import "./app.css";
 
 const API = import.meta.env.VITE_API ?? "http://localhost:8460";
@@ -212,6 +213,7 @@ export default function App() {
         </header>
         <Answer />
         <FarmMap />
+        <Delegate />
         <FundAgent />
         <Bill />
         <footer>

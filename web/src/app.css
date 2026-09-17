@@ -134,3 +134,5 @@ footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; line-height: 1
 .farm-loop-row em { color: var(--accent); font-style: normal; font-size: .78rem;
                     font-variant-numeric: tabular-nums; }
 .farm-loop-note { color: var(--ink2); font-size: .85rem; line-height: 1.6; margin-top: .7rem; max-width: 46rem; }
+.fund-act .ghost { background: transparent; border: 1px solid var(--line); color: var(--ink2); }
+.fund-act .ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--accent); }

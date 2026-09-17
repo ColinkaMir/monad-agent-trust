@@ -88,13 +88,38 @@ if (amount > PER_CALL_CAP) { console.log("above our per-call cap, refusing"); pr
 if (!LIVE) { console.log("dry run, nothing spent. re-run with --live"); process.exit(0); }
 
 const now = Math.floor(Date.now() / 1000);
-const authorization = {
+
+// A visitor can delegate the payment instead of topping us up: X402_VOUCHER holds an EIP-3009
+// authorization they signed in their own wallet, against this same offer. When one is supplied
+// the agent spends it and never touches the money, which is the whole point of delegation. The
+// offer is re-checked against what they signed first, because a seller that changed its payout
+// address between the signature and the spend must not be paid with somebody else's consent.
+const VOUCHER = process.env.X402_VOUCHER
+  ? JSON.parse(readFileSync(process.env.X402_VOUCHER, "utf8"))
+  : null;
+if (VOUCHER) {
+  const mismatch =
+    VOUCHER.to.toLowerCase() !== String(accepted.payTo).toLowerCase() ? "payTo"
+    : BigInt(VOUCHER.value) !== amount ? "amount"
+    : Number(VOUCHER.validBefore) <= now ? "expiry"
+    : null;
+  if (mismatch) {
+    console.log(`voucher does not match the live offer (${mismatch}); refusing to spend it`);
+    process.exit(1);
+  }
+}
+
+const authorization = VOUCHER ? {
+  from: VOUCHER.from, to: VOUCHER.to, value: String(VOUCHER.value),
+  validAfter: String(VOUCHER.validAfter), validBefore: String(VOUCHER.validBefore),
+  nonce: VOUCHER.nonce,
+} : {
   from: wallet.address, to: accepted.payTo, value: String(amount),
   validAfter: String(now - 60),
   validBefore: String(now + (accepted.maxTimeoutSeconds ?? 300)),
   nonce: ethers.hexlify(randomBytes(32)),
 };
-const signature = await wallet.signTypedData(
+const signature = VOUCHER ? VOUCHER.signature : await wallet.signTypedData(
   { name: accepted.extra?.name ?? "USDC", version: accepted.extra?.version ?? "2",
     chainId: 143, verifyingContract: accepted.asset ?? USDC },
   { TransferWithAuthorization: [
@@ -103,6 +128,7 @@ const signature = await wallet.signTypedData(
     { name: "validBefore", type: "uint256" }, { name: "nonce", type: "bytes32" }] },
   { ...authorization, value: amount,
     validAfter: BigInt(authorization.validAfter), validBefore: BigInt(authorization.validBefore) });
+if (VOUCHER) console.log(`paying with a delegated voucher signed by ${VOUCHER.from}`);
 
 const payment = Buffer.from(JSON.stringify({
   x402Version: 2, resource: pr.resource ?? ENDPOINT, accepted,
@@ -124,13 +150,17 @@ const usdc = new ethers.Contract(USDC, ["event Transfer(address indexed from, ad
 const claimed = new Set(
   (existsSync(LEDGER) ? readFileSync(LEDGER, "utf8").trim().split("\n").filter(Boolean) : [])
     .map((l) => JSON.parse(l).tx).filter(Boolean));
-const logs = await usdc.queryFilter(usdc.filters.Transfer(wallet.address, accepted.payTo),
+const payer = authorization.from;
+const logs = await usdc.queryFilter(usdc.filters.Transfer(payer, accepted.payTo),
                                     blockBefore, "latest").catch(() => []);
 const onChain = logs.filter((l) => l.args?.value === amount && !claimed.has(l.transactionHash));
 
 const record = {
   at: new Date().toISOString(),
   endpoint: ENDPOINT, about: target,
+  payer: authorization.from,
+  delegated: Boolean(VOUCHER),
+  nonce: authorization.nonce,
   paidUsdc: Number(amount) / 1e6,
   payTo: accepted.payTo,
   httpStatus: res.status,
