@@ -63,7 +63,10 @@ const split = (sig: string) => ({
 export function Delegate() {
   const { primaryWallet } = useDynamicContext();
   const [summary, setSummary] = useState<Summary | null>(null);
-  const [count, setCount] = useState(5);
+  // One by default. Each question needs its own authorization, so "5" means five wallet prompts
+  // in a row, and a person who is not expecting that reads it as the dialog failing and
+  // reopening. It is opt-in, and the button says how many prompts it will cost.
+  const [count, setCount] = useState(1);
   const [state, setState] = useState<{ busy?: string; done?: string; error?: string }>({});
 
   const address = primaryWallet?.address ?? null;
@@ -81,9 +84,12 @@ export function Delegate() {
       if (!isEthereumWallet(primaryWallet)) throw new Error("connect an EVM wallet");
       const client = await primaryWallet.getWalletClient();
       const now = Math.floor(Date.now() / 1000);
-      const vouchers = [];
+      // Each signature is sent the moment it exists. The first version collected all of them and
+      // posted once at the end, so stopping halfway through threw away every signature already
+      // given: the work was done and nothing was kept.
+      let kept = 0;
       for (let i = 0; i < count; i++) {
-        setState({ busy: `signing ${i + 1} of ${count}…` });
+        setState({ busy: count > 1 ? `signing ${i + 1} of ${count}…` : "confirm in your wallet…" });
         const message = {
           from: address as `0x${string}`, to: NANSEN_PAYTO, value: PRICE,
           validAfter: BigInt(now - 60), validBefore: BigInt(now + WINDOW_HOURS * 3600),
@@ -93,20 +99,20 @@ export function Delegate() {
           domain: DOMAIN, types: TRANSFER_TYPES,
           primaryType: "TransferWithAuthorization", message,
         });
-        vouchers.push({
-          from: message.from, to: message.to, value: String(message.value),
-          validAfter: String(message.validAfter), validBefore: String(message.validBefore),
-          nonce: message.nonce, signature,
+        const r = await fetch(`${API}/delegate`, {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ vouchers: [{
+            from: message.from, to: message.to, value: String(message.value),
+            validAfter: String(message.validAfter), validBefore: String(message.validBefore),
+            nonce: message.nonce, signature,
+          }] }),
         });
+        const j = await r.json();
+        kept += j.accepted?.length ?? 0;
+        setState({ busy: `${kept} of ${count} delegated…` });
+        refresh();
       }
-      setState({ busy: "handing them over…" });
-      const r = await fetch(`${API}/delegate`, {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ vouchers }),
-      });
-      const j = await r.json();
-      setState({ done: `${j.accepted.length} question${j.accepted.length === 1 ? "" : "s"} delegated`
-        + (j.rejected.length ? `, ${j.rejected.length} rejected` : "") });
+      setState({ done: `${kept} question${kept === 1 ? "" : "s"} delegated and ready` });
       refresh();
     } catch (e: any) {
       setState({ error: String(e?.shortMessage ?? e?.message ?? e).slice(0, 180) });
@@ -174,17 +180,24 @@ export function Delegate() {
                inputMode="numeric" />
         <span className="unit">questions</span>
         <button onClick={delegate} disabled={Boolean(state.busy)}>
-          {state.busy ?? `delegate $${(Number(PRICE) / 1e6 * count).toFixed(2)}`}
+          {state.busy ?? (count === 1
+            ? `sign once, $${(Number(PRICE) / 1e6).toFixed(2)}`
+            : `sign ${count} times, $${(Number(PRICE) / 1e6 * count).toFixed(2)}`)}
         </button>
         {Boolean(summary?.questionsLeft) && (
           <button className="ghost" onClick={revoke} disabled={Boolean(state.busy)}>cancel the rest</button>
         )}
       </div>
       <p className="fund-hint">
-        You sign one authorization per question, each worth $0.01 to Nansen and valid for
-        {" "}{WINDOW_HOURS} hours. This service spends them one at a time and never holds the money.
-        Unspent ones are cancelled with <span className="mono">cancelAuthorization</span> on USDC,
-        which is a transaction you send, not a favour we grant.
+        <b>Your wallet asks once per question.</b> Choose 3 and it opens three times in a row; that
+        is the signature dialog doing its job, not failing. Each one authorises $0.01 to Nansen and
+        nothing else, is valid for {WINDOW_HOURS} hours, and is kept the moment you sign it, so
+        stopping half way keeps what you already gave.
+      </p>
+      <p className="fund-hint">
+        This service spends them one at a time and never holds the money. Unspent ones are
+        cancelled with <span className="mono">cancelAuthorization</span> on USDC, which is a
+        transaction you send, not a favour we grant.
       </p>
       {state.done && <p className="fund-hint">{state.done}</p>}
       {state.error && <p className="fund-err">{state.error}</p>}
