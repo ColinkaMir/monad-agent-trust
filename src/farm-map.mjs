@@ -2,7 +2,7 @@
 // money that produced it came from.
 //
 // Why a picture at all. The argument of this project is a comparison between two numbers that
-// are four orders of magnitude apart (9,188 ratings, 3 of them backed by an arm's-length
+// are three orders of magnitude apart (9,188 ratings, 16 of them backed by an arm's-length
 // payment), and a table states that badly: the eye reads two rows and moves on. One dot per
 // rating puts the ratio itself on the screen, which is the only honest way to show a ratio.
 //
@@ -92,7 +92,7 @@ const out = {
   ratings: idx.feedback.length,
   registrations: idx.registrations.length,
   ratedAgents: byAgent.size,
-  independentWallets: prov.totals.independentPaidWalletsNetworkWide,
+  independentWallets: prov.totals.independentWalletsNetworkWide,
   loop,
   agents,
 };

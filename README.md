@@ -9,9 +9,9 @@ The registry counts ratings. On Monad that count is self-produced:
 - **9,188** ratings in total, and **99.7% of them landed in three days of February 2026**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
-- Across the whole chain, ratings that survive both provenance filters: **16 of 9,188, or 0.17%**,
-  and they come from **2 wallets**. Buying the funding history of those two leaves **one** that
-  nothing is known against
+- Ratings that survive both provenance filters, across the whole chain: **16 of 9,188**. They come
+  from **2 wallets**, and one of those two produced 15 of the 16 by rating the same two agents over
+  and over. Buying the funding history of both leaves **one wallet** that nothing is known against
 
 So this asks the two questions the registry cannot answer, and answers them in words rather than
 with a score out of a hundred, because a score invites exactly the mistake this exists to correct:
@@ -74,8 +74,8 @@ looks independent, and the answer came back split:
 | `0x794c94f1` | agent 4 | `0xdf747918` | Nansen labels it **🤖 Distributor**, a wallet whose business is funding many wallets. Independent of *this* owner, not independent of everyone |
 | `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it |
 
-So of 9,188 ratings, the ones that survive the free filters number three, they come from two
-wallets, and after the purchase exactly one wallet on the entire chain has a clean provenance. The
+So the free filters leave 16 ratings out of 9,188, produced by 2 wallets across 3 agents, and
+after the purchase exactly one of those wallets has a provenance with nothing against it. The
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
 
@@ -105,11 +105,12 @@ and the books balance: twenty transfers, twenty answers, and Nansen has never ta
 it did not answer for.
 
 The provenance count over-stated independence, in the same shape as the thing this project was
-built to expose. "Three independent ratings network-wide" was three *ratings* from two *wallets*,
-because the total added up per-agent counts and one wallet is the whole independent record of two
-different agents. That error needed no purchase to find, only the honesty to count the right noun,
-and it is exactly the mistake a registry makes when it reports a number of ratings as a number of
-opinions. Both figures are published now, and they differ.
+built to expose. The total was published as "three independent ratings network-wide" and it was
+not a count of ratings at all: it was three (agent, wallet) pairs, produced by two wallets, which
+between them account for sixteen entries in the registry. One field, three different nouns, and
+the label on it was the wrong one. That needed no purchase to find, only the willingness to ask
+what was being counted, and it is precisely the mistake a registry makes when it reports a number
+of ratings as a number of opinions. All three are now published under their own names.
 
 The wider point stands on the other sellers: in our September survey of every x402 seller on
 Monad, 7 of 19 paid calls took the money and answered with an error, and one returned HTTP 200

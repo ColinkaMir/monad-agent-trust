@@ -103,12 +103,17 @@ const out = {
     feedbackEvents: idx.feedback.length,
     ratedAgents: byAgent.size,
     agentsCovered: agents.length,
-    // Ratings and wallets are different numbers and the gap is the point: the same wallet is the
-    // whole independent record of two separate agents, so adding per-agent counts overstates how
-    // many independent parties exist on this chain.
-    independentPaidRatings: agents.reduce((n, a) => n + a.independentPaid, 0),
-    independentPaidWalletsNetworkWide:
+    // Three nouns, three different numbers, and the gap between them is the finding. Calling any
+    // of them "ratings" when it is not was this file's own version of the mistake it exists to
+    // expose, so each is named for what it counts.
+    //   pairs   — (agent, wallet) relationships that pass both filters
+    //   wallets — distinct parties behind those relationships
+    //   ratings — entries in the registry's own count that those parties produced
+    independentPairs: agents.reduce((n, a) => n + a.independentPaid, 0),
+    independentWalletsNetworkWide:
       new Set(agents.flatMap((a) => a.independentWallets)).size,
+    independentRatings: agents.reduce((n, a) => n + a.independentWallets
+      .reduce((m, w) => m + (byAgent.get(a.agentId) ?? []).filter((e) => e.client === w).length, 0), 0),
   },
   agents,
 };
@@ -116,8 +121,9 @@ writeFileSync("data/provenance.json", JSON.stringify(out, null, 1));
 
 console.log(`${out.totals.registrations} registrations, ${out.totals.feedbackEvents} feedback events`);
 console.log(`${out.totals.ratedAgents} agents rated, ${agents.length} covered`);
-console.log(`independent paid ratings across the whole network: ${out.totals.independentPaidRatings}, `
-  + `from ${out.totals.independentPaidWalletsNetworkWide} distinct wallet(s)\n`);
+console.log(`independent across the whole network: ${out.totals.independentRatings} ratings, from `
+  + `${out.totals.independentPairs} (agent, wallet) pairs, from `
+  + `${out.totals.independentWalletsNetworkWide} distinct wallet(s)\n`);
 console.log("agent     feedback  raters  owner-funded  full-cycle  paid-before  independent  window");
 for (const a of agents.slice(0, 12)) {
   console.log(`#${String(a.agentId).padEnd(8)}${String(a.feedback).padEnd(10)}${String(a.raters).padEnd(8)}`

@@ -160,9 +160,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       reading:
         "Of every rating on this chain, the ones that survive both filters (paid before rating, "
         + "and the rater was never funded by the agent's owner) number "
-        + `${data.totals?.independentPaidRatings ?? 0}, and they come from `
-        + `${data.totals?.independentPaidWalletsNetworkWide ?? 0} distinct wallets, because one `
-        + "wallet is the entire independent record of two separate agents.",
+        + `${data.totals?.independentRatings ?? 0}, and they come from `
+        + `${data.totals?.independentWalletsNetworkWide ?? 0} distinct wallets across `
+        + `${data.totals?.independentPairs ?? 0} agents. One of those wallets produced almost all `
+        + "of them by rating the same two agents repeatedly, so even this number is a count of "
+        + "entries rather than a count of opinions.",
     });
   }
 
