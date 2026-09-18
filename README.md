@@ -187,4 +187,8 @@ so even the one wallet left standing is an upper bound rather than a floor. That
 already moved once: it was three before we bought the funding history, and buying it is what
 turned three ratings into two wallets into one.
 
+## License
+
+GPL-3.0-only. The full text is in [LICENSE](LICENSE).
+
 Built for Metropolis, September 2026, by [ProofLines](https://prooflines.org/monad/).

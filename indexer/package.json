@@ -7,7 +7,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "description": "",
   "dependencies": {
     "envio": "^2.32.12",
