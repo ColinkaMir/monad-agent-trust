@@ -11,3 +11,9 @@ indexer/generated/
 # purchase ledger, the reconciliation against the chain, and the computed provenance are what
 # let a reader check the numbers in the README without spending money to reproduce them.
 data/indexed.json
+
+# Live delegated-spend authorisations. The service appends every EIP-3009 voucher it receives
+# here, signature included, and an unexpired signature is spendable by anyone who reads it:
+# publishing this file would hand out other people's authorisations, starting with any judge
+# who tries the demo. The six entries already in history are expired and cannot be relayed.
+data/vouchers.json
