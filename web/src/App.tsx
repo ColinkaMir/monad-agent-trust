@@ -49,6 +49,9 @@ const MONAD = {
   name: "Monad",
   nativeCurrency: { decimals: 18, name: "MON", symbol: "MON" },
   networkId: 143,
+  // Deliberately the public endpoint. This object ships inside the browser bundle, so a private
+  // RPC URL here would hand its token to every visitor. The private endpoint belongs to the
+  // server only, where serve.mjs reads it from the environment.
   rpcUrls: ["https://rpc.monad.xyz"],
   vanityName: "Monad",
 };

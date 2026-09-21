@@ -18,7 +18,9 @@ import { ethers } from "ethers";
 import { readFileSync, appendFileSync, mkdirSync, existsSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
-const RPC = "https://rpc.monad.xyz";
+// Same knob as serve.mjs: a private endpoint goes in the environment, never in the file, because
+// the token lives inside the URL. The public RPC stays the default so a fresh clone still runs.
+const RPC = process.env.MONAD_RPC ?? "https://rpc.monad.xyz";
 // same ops wallet signs on mainnet; it paid the September round
 const KEY = process.env.X402_KEY_FILE ?? `${process.env.HOME}/.monad-testnet-ops-key`;
 const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
