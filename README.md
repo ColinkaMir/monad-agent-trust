@@ -1,13 +1,29 @@
 # Does this agent deserve its reputation?
 
-**Provenance for ERC-8004 reputation on Monad, from a service that buys its own inputs and shows
-its own bill.**
+**A provenance primitive for ERC-8004 reputation on Monad: an HTTP API and an MCP server that other
+agents and applications call before they trust a counterparty.** The web page is the shop window,
+not the product. Anything the page shows, a program can ask for in one request.
 
-Live: **https://prooflines.org/monad/agent-trust/** (API under `/api`, MCP over stdio)
+```bash
+curl https://prooflines.org/monad/agent-trust/api/agent/182 | jq '{verdict, why}'
+```
+```json
+{
+  "verdict": "farmed",
+  "why": "7665 of 7665 raters were funded by the agent's own owner, and no rater paid the agent before rating it. The rating count is self-produced."
+}
+```
+
+Free to read, no key, no account. The one input that cannot be free is bought per call for $0.01 and
+the bill is published with the answer. Full reference in [API](#api) and [MCP](#mcp-in-three-lines),
+and what to do with the answer in [Integrating it](#integrating-it).
+
+Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · registered as agent
+**10253** in the registry it measures
 
 The registry counts ratings. On Monad that count is self-produced:
 
-- **10,252** agents registered, **84** ever rated
+- **10,254** agents registered, **84** ever rated
 - **9,188** ratings in total, and **99.7% of them landed in three days of February 2026**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
@@ -49,8 +65,74 @@ wallet that was paid to hold an opinion.
 | **Show** | All 9,188 ratings drawn one dot each, because the claim is a ratio of 16 to 9,188 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `burst`, `partly-backed`, `thin`, or `not covered`, each
-with the sentence that justifies it. `not covered` is a real answer: 84 of 10,252 agents have ever
+with the sentence that justifies it. `not covered` is a real answer: 84 of 10,254 agents have ever
 been rated, so most questions have no evidence either way and saying so beats inventing a number.
+
+## API
+
+Base URL `https://prooflines.org/monad/agent-trust/api`, or `http://127.0.0.1:8460` when self-hosted.
+Everything is JSON, everything is `GET` unless marked, and nothing needs a key.
+
+| Route | Answers | Costs |
+|---|---|---|
+| `/health` | what the service is, when it last indexed, totals for the whole network | free |
+| `/agents` | every covered agent with its verdict, for bulk callers | free |
+| `/agent/:id` | one agent: rater counts, owner-funded counts, timing of the loop, verdict, the sentence that justifies it, and the purchased corroboration if one was bought | free |
+| `/wallet/:address` | what this address owns and how those agents score, plus a bought signal when a payer is named | $0.01 when it buys |
+| `/agent-wallet` | the service's own address and balance, so a caller can see what funds the answers | free |
+| `POST /delegate` | accepts EIP-3009 authorisations so the caller pays for their own questions | free to call |
+| `/delegation/:address` | how many questions that address has signed for, and how many it can actually afford | free |
+
+Two details worth knowing before you integrate:
+
+- **`/agent/:id` returns `404` with a reason, not an empty object**, when an agent has fewer than the
+  covered minimum of five ratings. Most agents are in that state, and saying so is the honest answer.
+- **The paid half never fires by accident.** `/wallet/:address` buys only when the caller brings a
+  delegated voucher (`?payer=0x…`) or the operator has set `AGENT_PAYS_FOR_STRANGERS=1`. Otherwise it
+  returns the free half with `purchasedSignal.bought: false` and the reason. Pass `?buy=0` to state
+  explicitly that you do not want a purchase.
+
+```bash
+# free, no wallet involved
+curl "$BASE/agent/145"
+curl "$BASE/wallet/0x97cd97cfe21799bacbf39d0a53469e5f82f30996?buy=0"
+
+# with a purchase, paid by the caller's own delegated authorisation
+curl "$BASE/wallet/0x97cd…996?payer=0xYourAddress"
+```
+
+## MCP in three lines
+
+An agent about to transact with another agent does not open a web page, it calls a tool.
+
+```jsonc
+// claude_desktop_config.json, or any MCP client's server list
+{ "mcpServers": { "agent-trust": { "command": "node", "args": ["/path/to/src/mcp.mjs"] } } }
+```
+
+Three tools, and the split is deliberate: `agent_trust` and `trust_summary` read the index and are
+free, `wallet_trust` buys a Nansen signal for $0.01 and only when the caller passes `buy: true`.
+Nothing spends money unless it was asked to.
+
+## Integrating it
+
+The verdict is words rather than a score on purpose, so the integration is a decision, not a
+threshold. What a caller usually wants:
+
+```js
+const r = await fetch(`${BASE}/agent/${id}`);
+if (r.status === 404) return "unrated";          // no evidence either way, and most agents are here
+const { verdict, why, corroboration } = await r.json();
+// farmed | single-source | burst  -> the rating count is self-produced, treat it as unproven
+// partly-backed | thin            -> some independent payment, not much
+// corroboration.bought === true   -> a second, off-Monad source agreed, and the bill is in the answer
+```
+
+Who this is for, concretely: agent marketplaces and registries that rank by reputation, wallets and
+payment agents that check a counterparty before paying it, and anyone building on ERC-8004 who needs
+the provenance layer the registry does not carry. Rolling your own means walking every rated owner's
+full transfer history (121 seconds for the first pass here, 0.18 for the catch-up) and holding a
+Nansen account for the half that is not on Monad; calling this costs one request.
 
 ## The sponsor stack, and what each part actually carries
 
