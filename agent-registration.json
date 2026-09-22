@@ -1,0 +1,38 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Agent Trust on Monad",
+  "description": "Reads the ERC-8004 registries on Monad and answers one question about an agent: is its reputation backed by money its own owner did not put there. The free half comes from the chain, where every rating is checked for a payment that arrived BEFORE it and for whether the owner had funded that payer in the first place. The half the chain cannot answer, whether two wallets share a funder off Monad, is bought per call from Nansen over x402 at $0.01, and the bill is published. Measured on the whole network: 9,188 ratings, 99.7% of them produced in three days of February, and after both filters 16 ratings from 2 distinct wallets survive. Verdicts are words, not a score, because a produced number read as evidence is the exact mistake this service exists to expose. This agent is a BUYER on x402, not a seller: it sells nothing and charges nothing, and a visitor may instead delegate single-question spend authorizations from their own wallet under EIP-3009.",
+  "image": "https://prooflines.org/og-image.png",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://prooflines.org/monad/agent-trust/"
+    },
+    {
+      "name": "api",
+      "endpoint": "https://prooflines.org/monad/agent-trust/api"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/ColinkaMir/monad-agent-trust"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 10253,
+      "agentRegistry": "eip155:143:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+      "agentRegistrationTx": "0x95f684b2a573270e10a8550310c443880c6e0cd5b899504f3bfa8c387ed74a6b"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "operator": {
+    "name": "ProofLines",
+    "url": "https://prooflines.org/monad/",
+    "otherAgent": "eip155:143:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432/10231"
+  },
+  "disclosure": "Registering this service adds one record to the very registry it measures. The published registration count moves with it, and every figure this service reports about the network includes itself. It carries no ratings, and provenance is computed only for agents with at least five, so the measured provenance figures are unaffected. Registered 2026-09-22 as agent 10253 in block 107001060; the registration count this service reports moved from 10,253 to 10,254 with it."
+}
