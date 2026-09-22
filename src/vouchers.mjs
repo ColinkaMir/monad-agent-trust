@@ -10,8 +10,9 @@
 //   the ceiling is what was signed  — ten vouchers of $0.01 is a $0.10 ceiling, not an allowance
 //   it is revocable on chain        — cancelAuthorization(authorizer, nonce, v, r, s), verified
 //                                      live on Monad USDC: a dummy signature reverts with
-//                                      "FiatTokenV2: invalid signature", while a function that
-//                                      does not exist reverts with no data at all
+//                                      "ECRecover: invalid signature 'v' value", a spent nonce
+//                                      with "FiatTokenV2: authorization is used or canceled",
+//                                      and a function that does not exist reverts with no data
 //   spent-ness is not our claim     — authorizationState(authorizer, nonce) is the chain's answer
 //
 // Nothing here is trusted from the client except a signature, and a signature that does not

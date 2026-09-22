@@ -189,8 +189,10 @@ from the visitor straight to Nansen: we never hold anyone's money, the ceiling i
 signed rather than an allowance somebody could drain, and unspent authorizations are cancelled
 with `cancelAuthorization` on USDC, which is a transaction the visitor sends rather than a favour
 we grant. Verified on Monad mainnet before it was built on: a dummy signature to that function
-reverts with `FiatTokenV2: invalid signature`, while a function that does not exist reverts with
-no data at all.
+reverts with `ECRecover: invalid signature 'v' value`, and a nonce that was already spent reverts
+with `FiatTokenV2: authorization is used or canceled`, while a function that does not exist reverts
+with no data at all. Both strings are the contract refusing us by name, which is what proves the
+function is there.
 
 The open question was whether a facilitator would settle an authorization signed hours earlier,
 since an ordinary x402 payment is signed seconds before it is spent and given a five-minute
