@@ -306,14 +306,48 @@ createServer(async (req, res) => {
     // down refresh. A purchase happens when the caller brought their own delegated voucher, or
     // when the operator explicitly allows the house to pay (AGENT_PAYS_FOR_STRANGERS=1).
     const HOUSE_PAYS = process.env.AGENT_PAYS_FOR_STRANGERS === "1";
+    // Opening the house path for a review window is a reasonable thing to want, and an open path
+    // with no ceiling is not: one loop over a list of addresses empties the purse in a minute.
+    // The ceiling is a day's worth of spending, read back from the ledger rather than held in
+    // memory, so a restart cannot forget what today already cost.
+    // Counted in whole cents, not dollars. Adding 0.01 to a float 250 times lands on
+    // 2.4999999999999907, which is below a $2.50 ceiling, so the first version of this cap let a
+    // purchase through on the exact request it existed to refuse. The test that caught it cost a
+    // real cent, which is the cheapest way that lesson was ever going to be learned.
+    const houseCentsToday = () => {
+      if (!existsSync("data/purchases.jsonl")) return 0;
+      const today = new Date().toISOString().slice(0, 10);
+      return readFileSync("data/purchases.jsonl", "utf8").trim().split("\n")
+        .reduce((cents, line) => {
+          try {
+            const r = JSON.parse(line);
+            // Delegated purchases are the visitor's money, not ours, so they do not count here.
+            if (r.delegated || !r.at?.startsWith(today)) return cents;
+            return cents + Math.round((r.paidUsdc ?? 0) * 100);
+          } catch { return cents; }
+        }, 0);
+    };
+    const capCents = Math.round(Number(process.env.HOUSE_DAILY_CAP_USDC ?? "3") * 100);
+    const centsToday = HOUSE_PAYS ? houseCentsToday() : 0;
+    const houseCap = capCents / 100;
+    const spentToday = centsToday / 100;
+    const houseCanPay = HOUSE_PAYS && centsToday < capCents;
     const delegated = namedPayer
       ? (await vouchers.fundedSummary(namedPayer, new ethers.JsonRpcProvider(RPC))).affordable > 0
       : false;
     let signal;
     if (url.searchParams.get("buy") === "0") {
       signal = { bought: false, skipped: true };
-    } else if (delegated || HOUSE_PAYS) {
+    } else if (delegated || houseCanPay) {
       signal = await walletSignal(addr, delegated ? namedPayer : null);
+    } else if (HOUSE_PAYS) {
+      signal = {
+        bought: false,
+        why: `the house pays for strangers today up to $${houseCap.toFixed(2)} and has spent `
+           + `$${spentToday.toFixed(2)} of it. The ceiling resets at midnight UTC. Answers bought `
+           + `earlier are still served, and a delegated question of your own is not affected.`,
+        delegate: "POST /delegate",
+      };
     } else {
       signal = {
         bought: false,
