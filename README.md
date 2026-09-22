@@ -209,14 +209,14 @@ money paid for it.
 The service pays for its answers and publishes what that cost, because a service that judges other
 people's honesty should not hide its own inputs. `GET /spend` at any moment; at the time of writing:
 
-**27 calls, 23 delivered, and the chain says $0.23.**
+**29 authorised, 24 delivered, and the chain says $0.24.**
 
 This project has now caught itself twice, and both are in the git history on purpose.
 
 The per-call ledger over-stated the bill: a rejected call booked a neighbouring call's transfer,
 because its reconciliation window opened five blocks before the request was even sent. The full
 on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer,
-and the books balance: twenty-three transfers, twenty-three answers, and Nansen has never
+and the books balance: twenty-four transfers, twenty-four answers, and Nansen has never
 taken a cent it did not answer for.
 
 The provenance count over-stated independence, in the same shape as the thing this project was
