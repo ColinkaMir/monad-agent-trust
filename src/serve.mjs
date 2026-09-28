@@ -49,6 +49,14 @@ const enrichment = () =>
     ? JSON.parse(readFileSync("data/enrichment.json", "utf8"))
     : { funders: {}, agents: {} };
 
+/// Who funded the raters of a ring, from src/ring-funders.mjs. Separate from the provenance pass
+/// because that one walks agent OWNERS, and the whole point of a ring is that the money came from
+/// somebody who owns none of these agents.
+const ringFunders = () =>
+  existsSync("data/ring-funders.json")
+    ? JSON.parse(readFileSync("data/ring-funders.json", "utf8"))
+    : { agents: {} };
+
 /// The purchased half of the verdict. Our own index can say the owner funded a rater ON MONAD;
 /// Nansen's first-funder edge says who funded it first ANYWHERE, which is the question a farm
 /// would have to defeat on every chain at once.
@@ -128,12 +136,23 @@ function verdict(a) {
   // The floor of five raters is not decoration. Agent #145 has one rater who also rated seven
   // other agents, which is 100% overlap and means nothing: one busy wallet is not a ring.
   if (a.independentPaid === 0 && a.ownerFunded === 0 && a.raters >= 5 && a.sharedRaterShare >= 0.5) {
-    return {
-      verdict: "ring",
-      why: `${a.sharedRaters} of ${a.raters} raters also rated ${a.ringAgents} other agents, and `
-         + `no money moved in either direction. The ratings are shared out among a small set of `
-         + `wallets rather than earned.`,
-    };
+    let why = `${a.sharedRaters} of ${a.raters} raters also rated ${a.ringAgents} other agents, and `
+            + `no money moved in either direction. The ratings are shared out among a small set of `
+            + `wallets rather than earned.`;
+    // Second leg, when the chain supports it: who paid for those wallets in the first place. Only
+    // stated when it covers at least three of them, because one shared funder among two wallets is
+    // a coincidence and saying otherwise would be the overreach this project objects to.
+    const f = ringFunders().agents?.[a.agentId];
+    if (f?.topFunder && f.topFunderWallets >= 3) {
+      const when = f.fundingWindow?.[0] === f.fundingWindow?.[1]
+        ? `on ${f.fundingWindow[0]}`
+        : `between ${f.fundingWindow?.[0]} and ${f.fundingWindow?.[1]}`;
+      why += ` ${f.topFunderWallets} of the ${f.fundedOnMonad} that ever received MON were funded `
+           + `by one address, ${f.topFunder.slice(0, 10)}…, ${when}, which is months before they `
+           + `rated anything. That address owns none of these agents, so the owner-funding check `
+           + `never sees it.`;
+    }
+    return { verdict: "ring", why };
   }
   if (a.busiestDayShare > 0.8) {
     return { verdict: "burst",

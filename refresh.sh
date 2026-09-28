@@ -16,6 +16,9 @@ cd /home/solana/metropolis-agent-trust
 node src/index-erc8004.mjs
 node src/score.mjs
 node src/farm-map.mjs
+# Кто оплатил кольца: один запрос к HyperSync на кольцевого агента, их единицы. Шаг после
+# provenance, потому что список колец берётся из него.
+node src/ring-funders.mjs
 
 SRC=web/public/farm.json
 DST=/var/www/proofline-public/monad/agent-trust/farm.json

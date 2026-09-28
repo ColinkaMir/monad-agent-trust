@@ -1,0 +1,66 @@
+{
+ "generatedAt": "2026-09-28T12:11:04.869Z",
+ "scanSeconds": 1.1,
+ "agents": {
+  "157": {
+   "raters": 5,
+   "fundedOnMonad": 2,
+   "distinctFunders": 2,
+   "topFunder": "0x6ccbe5f5cf80f66a0ef286287e2a75e4afec7fbf",
+   "topFunderWallets": 1,
+   "fundingWindow": [
+    "2026-02-14",
+    "2026-02-14"
+   ],
+   "ratingWindow": [
+    "2026-02-14",
+    "2026-02-15"
+   ]
+  },
+  "10180": {
+   "raters": 7,
+   "fundedOnMonad": 5,
+   "distinctFunders": 2,
+   "topFunder": "0xd3868e1ed738ced6945a574a7c769433bed5d474",
+   "topFunderWallets": 4,
+   "fundingWindow": [
+    "2026-02-22",
+    "2026-02-22"
+   ],
+   "ratingWindow": [
+    "2026-08-20",
+    "2026-09-27"
+   ]
+  },
+  "10181": {
+   "raters": 11,
+   "fundedOnMonad": 8,
+   "distinctFunders": 2,
+   "topFunder": "0xd3868e1ed738ced6945a574a7c769433bed5d474",
+   "topFunderWallets": 7,
+   "fundingWindow": [
+    "2026-02-22",
+    "2026-02-22"
+   ],
+   "ratingWindow": [
+    "2026-08-09",
+    "2026-09-27"
+   ]
+  },
+  "10182": {
+   "raters": 16,
+   "fundedOnMonad": 9,
+   "distinctFunders": 2,
+   "topFunder": "0xd3868e1ed738ced6945a574a7c769433bed5d474",
+   "topFunderWallets": 8,
+   "fundingWindow": [
+    "2026-02-22",
+    "2026-02-22"
+   ],
+   "ratingWindow": [
+    "2026-08-09",
+    "2026-09-27"
+   ]
+  }
+ }
+}
