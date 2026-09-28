@@ -93,6 +93,12 @@ const out = {
   registrations: idx.registrations.length,
   ratedAgents: byAgent.size,
   independentWallets: prov.totals.independentWalletsNetworkWide,
+  // Вычисленные, а не написанные: страница печатала «99.7% за три дня февраля», и это число
+  // было долей одного агента в старом корпусе. Теперь текст на странице берётся отсюда.
+  februaryShare: prov.totals.februaryShare,
+  busiestThreeDayShare: prov.totals.busiestThreeDayShare,
+  busiestThreeDays: prov.totals.busiestThreeDays,
+  latestRatingDay: prov.totals.latestRatingDay,
   loop,
   agents,
 };

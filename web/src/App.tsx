@@ -244,6 +244,15 @@ function Bill() {
 }
 
 export default function App() {
+  // Читаем те же доли, что печатает страница ниже: числа в заголовке обязаны приходить из данных,
+  // потому что однажды они разъехались на девять процентных пунктов и никто этого не заметил.
+  const [corpus, setCorpus] = useState<{ februaryShare: number; busiestThreeDayShare: number } | null>(null);
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}farm.json`)
+      .then((r) => r.json())
+      .then((d) => setCorpus({ februaryShare: d.februaryShare, busiestThreeDayShare: d.busiestThreeDayShare }))
+      .catch(() => {});
+  }, []);
   return (
     <DynamicContextProvider
       theme="dark"
@@ -259,10 +268,14 @@ export default function App() {
           <div>
             <h1>Does this agent deserve its reputation?</h1>
             <p className="lead">
-              ERC-8004 counts ratings. On Monad that count is self-produced: 99.7% of all feedback
-              landed in three days of February, and on the most-rated agent every rater had been
-              funded by that agent's own owner eight seconds before rating it. This asks the two questions
-              the registry cannot: did the rater pay first, and whose money was it.
+              ERC-8004 counts ratings. On Monad that count is self-produced:{" "}
+              {corpus
+                ? `${(corpus.februaryShare * 100).toFixed(1)}% of all feedback is from February 2026 and ` +
+                  `${(corpus.busiestThreeDayShare * 100).toFixed(1)}% of it landed on three days`
+                : "almost all of it landed in a handful of days"}
+              , and on the most-rated agent every rater had been funded by that agent's own owner
+              eight seconds before rating it. This asks the two questions the registry cannot: did
+              the rater pay first, and whose money was it.
             </p>
           </div>
           <div className="signin">

@@ -114,6 +114,28 @@ const out = {
       new Set(agents.flatMap((a) => a.independentWallets)).size,
     independentRatings: agents.reduce((n, a) => n + a.independentWallets
       .reduce((m, w) => m + (byAgent.get(a.agentId) ?? []).filter((e) => e.client === w).length, 0), 0),
+    // How concentrated the corpus is in time, computed rather than remembered. The prose used to
+    // carry "99.7% in three days of February", which was 7,665 of 7,689 — agent #182's share of a
+    // corpus that has since grown. It was right about a different thing and wrong here, and it
+    // stayed wrong because nothing recomputed it. These three do.
+    ...(() => {
+      const byDay = new Map();
+      for (const e of idx.feedback) {
+        const day = new Date(e.ts * 1000).toISOString().slice(0, 10);
+        byDay.set(day, (byDay.get(day) ?? 0) + 1);
+      }
+      const ranked = [...byDay.entries()].sort((a, b) => b[1] - a[1]);
+      const top3 = ranked.slice(0, 3);
+      const total = idx.feedback.length || 1;
+      return {
+        busiestThreeDays: top3.map(([day]) => day).sort(),
+        busiestThreeDayShare: +(top3.reduce((n, [, c]) => n + c, 0) / total).toFixed(4),
+        februaryShare: +([...byDay.entries()]
+          .filter(([day]) => day.startsWith("2026-02"))
+          .reduce((n, [, c]) => n + c, 0) / total).toFixed(4),
+        latestRatingDay: ranked.length ? [...byDay.keys()].sort().at(-1) : null,
+      };
+    })(),
   },
   agents,
 };

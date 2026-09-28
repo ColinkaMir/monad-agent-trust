@@ -1,0 +1,33 @@
+{
+  "base": "https://prooflines.org/monad/agent-trust/",
+  "shots": [
+    {
+      "name": "question",
+      "at": 2
+    },
+    {
+      "name": "verdict-182",
+      "at": 7
+    },
+    {
+      "name": "evidence",
+      "at": 18
+    },
+    {
+      "name": "corroboration",
+      "at": 21
+    },
+    {
+      "name": "farm-map",
+      "at": 26
+    },
+    {
+      "name": "verdict-145",
+      "at": 37
+    },
+    {
+      "name": "api",
+      "at": 42
+    }
+  ]
+}

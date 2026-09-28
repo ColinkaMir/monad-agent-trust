@@ -1,7 +1,7 @@
 // Builds the provenance dataset behind the trust answer, straight from Monad with HyperSync.
 //
 // The question this data answers is not "how many ratings does this agent have" — the
-// registry already tells you that, and on Monad the number is worthless: 99.7% of all
+// registry already tells you that, and on Monad the number is worthless: 97% of all
 // feedback was produced over three days in February, and on the most-rated agent every
 // single rater had been funded by that agent's own owner seconds before rating.
 //
