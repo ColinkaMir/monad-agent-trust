@@ -26,6 +26,15 @@ for (const f of idx.feedback) {
 }
 const day = (ts) => new Date(ts * 1000).toISOString().slice(0, 10);
 
+// Кто из оценивших ходит по нескольким агентам. Февральская волна устроена как 7 683 кошелька
+// по одному отзыву каждый, сентябрьская как 20 кошельков по пять отзывов у разных агентов, и
+// разделяет их именно это число, а не деньги: во второй волне денег не двигалось вообще.
+const agentsPerClient = new Map();
+for (const e of idx.feedback) {
+  if (!agentsPerClient.has(e.client)) agentsPerClient.set(e.client, new Set());
+  agentsPerClient.get(e.client).add(e.agentId);
+}
+
 const agents = [];
 for (const [agentId, events] of byAgent) {
   if (events.length < idx.minFeedback) continue;
@@ -82,6 +91,14 @@ for (const [agentId, events] of byAgent) {
     busiestDayShare: +(Math.max(...days.values()) / events.length).toFixed(4),
     first: day(events[0].ts), last: day(events[events.length - 1].ts),
     selfRated, ownerFunded, fullCycle, paidBefore, paidAfter, independentPaid, independentWallets,
+    // Доля оценивших, которые оценивали и других агентов, и сколько агентов они покрыли вместе.
+    // Сигнал структурный, а не денежный: он виден там, где платежей нет и провенанс молчит.
+    sharedRaters: [...firstRating.keys()].filter((w) => (agentsPerClient.get(w)?.size ?? 1) > 1).length,
+    sharedRaterShare: +([...firstRating.keys()]
+      .filter((w) => (agentsPerClient.get(w)?.size ?? 1) > 1).length / firstRating.size).toFixed(4),
+    ringAgents: new Set([...firstRating.keys()]
+      .flatMap((w) => [...(agentsPerClient.get(w) ?? [])])
+      .filter((id) => id !== agentId)).size,
     monOut: mon(weiOut), monBack: mon(weiBack), monMedianOut: mon(medianWei(outAmounts)),
     secondsFundingToRating: median(toRating), secondsRatingToReturn: median(toReturn),
   });

@@ -44,6 +44,22 @@ function verdict(a) {
       why: `${a.independentPaid} rater(s) paid this agent before rating it and were never funded `
          + `by its owner. That is the only part of the record money cannot fake.` };
   }
+  // A ring: the same small set of wallets rating this agent and several others, with no payment
+  // in either direction. This is the shape of the 27 September wave (20 wallets, 12 agents, five
+  // hours, zero MON moved) and it is invisible to every filter above, because those filters follow
+  // money and here there is none. Ordered AFTER the payment checks on purpose: a rater who paid
+  // before rating is evidence, and evidence outranks structure.
+  //
+  // The floor of five raters is not decoration. Agent #145 has one rater who also rated seven
+  // other agents, which is 100% overlap and means nothing: one busy wallet is not a ring.
+  if (a.independentPaid === 0 && a.ownerFunded === 0 && a.raters >= 5 && a.sharedRaterShare >= 0.5) {
+    return {
+      verdict: "ring",
+      why: `${a.sharedRaters} of ${a.raters} raters also rated ${a.ringAgents} other agents, and `
+         + `no money moved in either direction. The ratings are shared out among a small set of `
+         + `wallets rather than earned.`,
+    };
+  }
   if (a.busiestDayShare > 0.8) {
     return { verdict: "burst",
       why: `${Math.round(a.busiestDayShare * 100)}% of the ratings landed on one day, which is an `

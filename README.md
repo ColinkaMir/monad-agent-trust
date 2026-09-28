@@ -64,9 +64,33 @@ wallet that was paid to hold an opinion.
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
 | **Show** | All 9,283 ratings drawn one dot each, because the claim is a ratio of 16 to 9,283 and a table reads that as "some good, some bad" |
 
-Verdicts are `farmed`, `single-source`, `burst`, `partly-backed`, `thin`, or `not covered`, each
+Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
 with the sentence that justifies it. `not covered` is a real answer: 90 of 10,262 agents have ever
 been rated, so most questions have no evidence either way and saying so beats inventing a number.
+
+## Two shapes of the same lie
+
+The February wave and the one that arrived on 27 September, while this was being built, are
+opposites, and only one of them is about money.
+
+| | February | 27 September |
+|---|---|---|
+| ratings | 9,009 | 95 |
+| wallets behind them | 7,683 | 20 |
+| ratings per wallet, median | 1 | 5 |
+| wallets that rated more than one agent | 9, which is 0% | 13 of 20, which is 65% |
+| money moved | owner funds wallet, wallet rates in 8s, money back in 4s | none at all |
+| elapsed | three days | five hours and 45 minutes |
+
+February bought breadth: seven and a half thousand throwaway wallets, one rating each, 84,282 MON
+cycled out and back. September produced depth for free: twenty wallets rating a dozen agents in an
+afternoon, one of them covering six, and not a single transfer in either direction.
+
+The payment filters catch the first shape and say nothing useful about the second, because they
+follow money and there is none to follow. That is why `ring` exists as a separate verdict and why
+it sits after the payment checks rather than before them: a rater who paid is evidence, and
+evidence outranks structure. It also has a floor of five raters, because one busy wallet rating
+seven agents is not a ring and calling it one would be the same overreach this project objects to.
 
 ## API
 
