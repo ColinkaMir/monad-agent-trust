@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-09-28T12:11:03.591Z",
- "indexedAt": "2026-09-28T12:11:03.475Z",
+ "generatedAt": "2026-10-01T05:44:50.490Z",
+ "indexedAt": "2026-10-01T05:44:50.347Z",
  "source": "Monad mainnet via Envio HyperSync",
  "covers": "agents with at least 5 feedback events",
  "method": "For each rated agent we read every native transfer touching the agent owner and ask two questions the registry cannot answer: did the rating wallet pay the agent BEFORE it rated, and had the owner funded that wallet in the first place. A payment on its own proves nothing: on the most-rated agent every rater had paid, and every rater had been funded.",
  "totals": {
-  "registrations": 10262,
-  "feedbackEvents": 9283,
-  "ratedAgents": 90,
+  "registrations": 10275,
+  "feedbackEvents": 9288,
+  "ratedAgents": 93,
   "agentsCovered": 32,
   "independentPairs": 3,
   "independentWalletsNetworkWide": 2,
@@ -17,9 +17,9 @@
    "2026-02-17",
    "2026-02-21"
   ],
-  "busiestThreeDayShare": 0.8656,
-  "februaryShare": 0.9705,
-  "latestRatingDay": "2026-09-27"
+  "busiestThreeDayShare": 0.8651,
+  "februaryShare": 0.97,
+  "latestRatingDay": "2026-09-30"
  },
  "agents": [
   {
@@ -138,9 +138,9 @@
    "paidAfter": 0,
    "independentPaid": 0,
    "independentWallets": [],
-   "sharedRaters": 13,
-   "sharedRaterShare": 0.8125,
-   "ringAgents": 16,
+   "sharedRaters": 14,
+   "sharedRaterShare": 0.875,
+   "ringAgents": 18,
    "monOut": 0,
    "monBack": 0,
    "monMedianOut": null,
@@ -796,7 +796,7 @@
    "independentWallets": [],
    "sharedRaters": 3,
    "sharedRaterShare": 1,
-   "ringAgents": 6,
+   "ringAgents": 7,
    "monOut": 0,
    "monBack": 0,
    "monMedianOut": null,
