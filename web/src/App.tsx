@@ -59,6 +59,7 @@ const MONAD = {
 type Verdict = {
   agentId: number;
   corroboration?: { bought: boolean; usdcSpent: number; ratersSampled: number; finding: string } | null;
+  counterparties?: { bought: boolean; finding?: string; usdcPerAddress?: number } | null;
   feedback: number;
   raters: number;
   ownerFunded: number;
@@ -155,6 +156,14 @@ function Answer() {
               <p>
                 {agent.corroboration.finding} {agent.corroboration.ratersSampled} rater
                 {agent.corroboration.ratersSampled === 1 ? "" : "s"} looked up, ${agent.corroboration.usdcSpent.toFixed(2)} spent.
+              </p>
+            </div>
+          )}
+          {agent.counterparties?.bought && (
+            <div className="bought-line">
+              <b>bought across chains: who the money touched</b>
+              <p>
+                {agent.counterparties.finding} Nansen counterparties, ${agent.counterparties.usdcPerAddress?.toFixed(2)} per address.
               </p>
             </div>
           )}

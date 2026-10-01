@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { ethers } from "ethers";
 import * as vouchers from "./vouchers.mjs";
 import { promisify } from "node:util";
+import { verdict, corroboration, counterpartyCheck } from "./verdict.mjs";
 
 const run = promisify(execFile);
 const PORT = Number(process.env.PORT ?? 8460);
@@ -48,119 +49,6 @@ const enrichment = () =>
   existsSync("data/enrichment.json")
     ? JSON.parse(readFileSync("data/enrichment.json", "utf8"))
     : { funders: {}, agents: {} };
-
-/// Who funded the raters of a ring, from src/ring-funders.mjs. Separate from the provenance pass
-/// because that one walks agent OWNERS, and the whole point of a ring is that the money came from
-/// somebody who owns none of these agents.
-const ringFunders = () =>
-  existsSync("data/ring-funders.json")
-    ? JSON.parse(readFileSync("data/ring-funders.json", "utf8"))
-    : { agents: {} };
-
-/// The purchased half of the verdict. Our own index can say the owner funded a rater ON MONAD;
-/// Nansen's first-funder edge says who funded it first ANYWHERE, which is the question a farm
-/// would have to defeat on every chain at once.
-function corroboration(e) {
-  // Say what is missing rather than returning nothing: without a bought first-funder edge the
-  // owner-funding question is answered from Monad alone, and Monad alone cannot see a rater that
-  // was funded on some other chain. That gap is the reason the purchase exists.
-  if (!e) return {
-    bought: false,
-    gap: "not bought for this agent, so the owner-funding answer here sees only Monad and would "
-       + "miss a rater funded on another chain",
-  };
-  const base = { bought: true, usdcSpent: e.usdcSpent, ratersSampled: e.ratersSampled };
-  // Nansen pads labels with zero-width characters; they are invisible in a browser and turn into
-  // noise in a JSON client, so they come off before the label is quoted anywhere.
-  const clean = (l) => l.replace(/[\u200b-\u200d\ufeff]/g, "").trim();
-  const labels = Object.entries(e.funderLabels ?? {})
-    .map(([f, l]) => `${f.slice(0, 10)}… is labelled ${clean(l)}`);
-  const withLabels = (finding) => labels.length ? { ...base, finding, labels } : { ...base, finding };
-
-  if (e.withFirstFunder === 0) {
-    return { ...base, finding: "no first-funder record for the sampled raters, so this half is "
-                             + "simply unknown." };
-  }
-  if (e.ownerFundedCount === e.withFirstFunder) {
-    return withLabels(`every one of the ${e.withFirstFunder} sampled raters was first funded by the `
-      + `agent's own owner. Bought from Nansen, independent of our Monad index.`);
-  }
-  if (e.ownerFundedCount > 0) {
-    return withLabels(`${e.ownerFundedCount} of ${e.withFirstFunder} sampled raters were first `
-      + `funded by the agent's own owner, and the rest were not, so this is a mixed record rather `
-      + `than a farm.`);
-  }
-  if (e.sharedFunder) {
-    return withLabels(`${e.sharedFunderCount} of ${e.withFirstFunder} sampled raters share one `
-      + `first funder (${e.sharedFunder}), which is the shape of a funded cluster rather than a `
-      + `crowd.`);
-  }
-  // "Unrelated origins" is a statement about a crowd and says nothing about a single wallet, so
-  // a sample of one gets the narrower claim it actually supports.
-  if (e.withFirstFunder === 1) {
-    return withLabels("the one rater sampled was not first funded by the agent's owner. That is "
-      + "the whole of what was bought here, and one wallet is not a crowd.");
-  }
-  // A label here is the difference between a finding and a false alarm: unrelated origins mean
-  // something quite different when one of those origins is a wallet that funds thousands.
-  return withLabels(`${e.distinctFunders} distinct first funders across ${e.withFirstFunder} `
-    + `sampled raters, which is what unrelated origins look like.`);
-}
-
-/// Plain-language reading of the numbers. Deliberately blunt: the point of the project is that
-/// a count of ratings means nothing here, so the verdict says why rather than scoring 0-100.
-function verdict(a) {
-  if (!a) return { verdict: "unknown", why: "no feedback on this agent at all" };
-  if (a.ownerFunded > 0 && a.independentPaid === 0) {
-    return {
-      verdict: "farmed",
-      why: `${a.ownerFunded} of ${a.raters} raters were funded by the agent's own owner, and no `
-         + `rater paid the agent before rating it. The rating count is self-produced.`,
-    };
-  }
-  if (a.raters === 1 && a.feedback >= 5) {
-    return { verdict: "single-source",
-      why: `all ${a.feedback} ratings come from one wallet, so this is one opinion repeated.` };
-  }
-  if (a.independentPaid > 0) {
-    return { verdict: "partly-backed",
-      why: `${a.independentPaid} rater(s) paid this agent before rating it and were never funded `
-         + `by its owner. That is the only part of the record money cannot fake.` };
-  }
-  // A ring: the same small set of wallets rating this agent and several others, with no payment
-  // in either direction. This is the shape of the 27 September wave (20 wallets, 12 agents, five
-  // hours, zero MON moved) and it is invisible to every filter above, because those filters follow
-  // money and here there is none. Ordered AFTER the payment checks on purpose: a rater who paid
-  // before rating is evidence, and evidence outranks structure.
-  //
-  // The floor of five raters is not decoration. Agent #145 has one rater who also rated seven
-  // other agents, which is 100% overlap and means nothing: one busy wallet is not a ring.
-  if (a.independentPaid === 0 && a.ownerFunded === 0 && a.raters >= 5 && a.sharedRaterShare >= 0.5) {
-    let why = `${a.sharedRaters} of ${a.raters} raters also rated ${a.ringAgents} other agents, and `
-            + `no money moved in either direction. The ratings are shared out among a small set of `
-            + `wallets rather than earned.`;
-    // Second leg, when the chain supports it: who paid for those wallets in the first place. Only
-    // stated when it covers at least three of them, because one shared funder among two wallets is
-    // a coincidence and saying otherwise would be the overreach this project objects to.
-    const f = ringFunders().agents?.[a.agentId];
-    if (f?.topFunder && f.topFunderWallets >= 3) {
-      const when = f.fundingWindow?.[0] === f.fundingWindow?.[1]
-        ? `on ${f.fundingWindow[0]}`
-        : `between ${f.fundingWindow?.[0]} and ${f.fundingWindow?.[1]}`;
-      why += ` ${f.topFunderWallets} of the ${f.fundedOnMonad} that ever received MON were funded `
-           + `by one address, ${f.topFunder.slice(0, 10)}…, ${when}, which is months before they `
-           + `rated anything. That address owns none of these agents, so the owner-funding check `
-           + `never sees it.`;
-    }
-    return { verdict: "ring", why };
-  }
-  if (a.busiestDayShare > 0.8) {
-    return { verdict: "burst",
-      why: `${Math.round(a.busiestDayShare * 100)}% of all ratings landed on one day, which is an `
-         + `event rather than a history.` };
-  }
-  return { verdict: "thin", why: "ratings exist but nothing in them is payment-backed." };
-}
 
 /// Buys one signal about `addr`. If `payer` has delegated vouchers, one of theirs is spent and
 /// the money goes straight from them to Nansen; otherwise the agent pays out of its own purse.
@@ -322,7 +210,7 @@ createServer(async (req, res) => {
     const a = prov.agents.find((x) => x.agentId === Number(agentMatch[1]));
     const e = enrichment().agents[agentMatch[1]];
     return json(res, a ? 200 : 404, a
-      ? { ...a, ...verdict(a), corroboration: corroboration(e),
+      ? { ...a, ...verdict(a), corroboration: corroboration(e), counterparties: counterpartyCheck(a),
           method: prov.method, indexedAt: prov.indexedAt }
       : { error: "agent has fewer than the covered minimum of ratings, or does not exist" });
   }

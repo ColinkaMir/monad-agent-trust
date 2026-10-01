@@ -26,7 +26,11 @@ const KEY = process.env.X402_KEY_FILE ?? `${process.env.HOME}/.monad-testnet-ops
 const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603";
 const LEDGER = "data/purchases.jsonl";
 // A basic-tier Nansen call is $0.01. Anything above this is not the offer we agreed to.
-const PER_CALL_CAP = 20_000n; // 0.02 USDC in 6 decimals
+// counterparties is a premium endpoint, listed at $0.05 in its live 402 (checked 2026-10-01), so it
+// gets its own ceiling rather than a raised global one: a global raise would let any endpoint
+// quietly start charging five times more.
+const CAPS = { counterparties: 60_000n }; // 0.06 USDC
+const DEFAULT_CAP = 20_000n; // 0.02 USDC in 6 decimals
 
 const ENDPOINT = process.env.NANSEN_ENDPOINT
   ?? "https://api.nansen.ai/api/v1/profiler/address/current-balance";
@@ -52,8 +56,15 @@ const BODIES = {
   // reconciliation window used to open five blocks before the request. src/reconcile.mjs
   // is the full-pass check that caught it.)
   "related-wallets": (addr) => ({ address: addr, chain: process.env.NANSEN_CHAIN ?? "monad" }),
-  "counterparties": (addr) => ({ address: addr, chain: CHAIN,
-                                 pagination: { page: 1, per_page: 20 } }),
+  // Per the published schema (docs.nansen.ai/api/profiler/address-counterparties): `chain` and
+  // `date` are required and unknown fields are refused. The range opens before Monad mainnet so
+  // the February campaign is inside it; chain "all" because the point of buying this is what
+  // the owner did OFF Monad, which our own index already covers.
+  "counterparties": (addr) => ({ address: addr, chain: process.env.NANSEN_CHAIN ?? "all",
+                                 date: { from: process.env.NANSEN_FROM ?? "2025-11-01",
+                                         to: new Date().toISOString().slice(0, 10) },
+                                 group_by: "wallet",
+                                 pagination: { page: 1, per_page: 1000 } }),
 };
 const shape = Object.keys(BODIES).find((k) => ENDPOINT.includes(k));
 const body = shape
@@ -86,7 +97,8 @@ if (!accepted) {
 }
 const amount = BigInt(accepted.amount ?? accepted.maxAmountRequired ?? 0);
 console.log(`offer: ${Number(amount) / 1e6} USDC to ${accepted.payTo} on ${accepted.network}`);
-if (amount > PER_CALL_CAP) { console.log("above our per-call cap, refusing"); process.exit(1); }
+const cap = CAPS[shape] ?? DEFAULT_CAP;
+if (amount > cap) { console.log("above our per-call cap, refusing"); process.exit(1); }
 if (!LIVE) { console.log("dry run, nothing spent. re-run with --live"); process.exit(0); }
 
 const now = Math.floor(Date.now() / 1000);

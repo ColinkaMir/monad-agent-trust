@@ -12,6 +12,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import { readFileSync, existsSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { verdict, counterpartyCheck } from "./verdict.mjs";
 
 const run = promisify(execFile);
 const STORE = "data/provenance.json";
@@ -25,48 +26,6 @@ const bought = () =>
   existsSync("data/enrichment.json")
     ? JSON.parse(readFileSync("data/enrichment.json", "utf8")).agents ?? {}
     : {};
-
-/// Words, not a score. A 0-100 number would invite exactly the mistake this project exists to
-/// correct: treating a produced quantity as evidence.
-function verdict(a) {
-  if (!a) return { verdict: "unknown", why: "no feedback on this agent at all" };
-  if (a.ownerFunded > 0 && a.independentPaid === 0) {
-    return { verdict: "farmed",
-      why: `${a.ownerFunded} of ${a.raters} raters were funded by the agent's own owner, and no `
-         + `rater paid the agent before rating it. The rating count is self-produced.` };
-  }
-  if (a.raters === 1 && a.feedback >= 5) {
-    return { verdict: "single-source",
-      why: `all ${a.feedback} ratings come from one wallet, so this is one opinion repeated.` };
-  }
-  if (a.independentPaid > 0) {
-    return { verdict: "partly-backed",
-      why: `${a.independentPaid} rater(s) paid this agent before rating it and were never funded `
-         + `by its owner. That is the only part of the record money cannot fake.` };
-  }
-  // A ring: the same small set of wallets rating this agent and several others, with no payment
-  // in either direction. This is the shape of the 27 September wave (20 wallets, 12 agents, five
-  // hours, zero MON moved) and it is invisible to every filter above, because those filters follow
-  // money and here there is none. Ordered AFTER the payment checks on purpose: a rater who paid
-  // before rating is evidence, and evidence outranks structure.
-  //
-  // The floor of five raters is not decoration. Agent #145 has one rater who also rated seven
-  // other agents, which is 100% overlap and means nothing: one busy wallet is not a ring.
-  if (a.independentPaid === 0 && a.ownerFunded === 0 && a.raters >= 5 && a.sharedRaterShare >= 0.5) {
-    return {
-      verdict: "ring",
-      why: `${a.sharedRaters} of ${a.raters} raters also rated ${a.ringAgents} other agents, and `
-         + `no money moved in either direction. The ratings are shared out among a small set of `
-         + `wallets rather than earned.`,
-    };
-  }
-  if (a.busiestDayShare > 0.8) {
-    return { verdict: "burst",
-      why: `${Math.round(a.busiestDayShare * 100)}% of the ratings landed on one day, which is an `
-         + `event rather than a history.` };
-  }
-  return { verdict: "thin", why: "ratings exist but nothing in them is payment-backed." };
-}
 
 const text = (obj) => ({ content: [{ type: "text", text: JSON.stringify(obj, null, 1) }] });
 
@@ -140,6 +99,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         : { source: "not purchased for this agent",
             note: "so the owner-funding question here is answered from Monad alone, which cannot "
                 + "see a rater funded on another chain. Buy the first-funder edge to close that." },
+      counterparties: counterpartyCheck(a),
       indexedAt: data.indexedAt, method: data.method,
     });
   }

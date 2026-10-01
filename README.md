@@ -60,7 +60,7 @@ wallet that was paid to hold an opinion.
 |---|---|
 | **Index** | Both ERC-8004 registries on Monad, plus the transfer history of every rated agent's owner |
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
-| **Buy** | The one fact Monad cannot show: who funded a rater *first, anywhere*. Bought from Nansen for $0.01 a call over x402, on Monad |
+| **Buy** | What Monad cannot show: who funded a rater *first, anywhere*, and whom an owner or a ring's funder paid on *any* chain. Bought from Nansen over x402, on Monad: $0.01 and $0.05 a call |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
 | **Show** | All 9,288 ratings drawn one dot each, because the claim is a ratio of 16 to 9,288 and a table reads that as "some good, some bad" |
 
@@ -187,16 +187,38 @@ after the purchase exactly one of those wallets has a provenance with nothing ag
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
 
+The second purchase answers the question the first one cannot: not who funded a wallet first, but
+whom a wallet paid, on every chain Nansen covers. `/profiler/address/counterparties` costs $0.05,
+so it is bought only for the addresses a verdict already points at: the owners of every agent
+called farmed or ring, and a ring's shared funder. Nine addresses, $0.45.
+
+- **Rings.** The funder behind the 27 September ring paid 15 of the 16 raters of agent 10182, and
+  not only in MON: in AUSD, ETH, USDC and USD₮0 too; the same wallet also used Disperse.app, a
+  bulk-send tool (Nansen shows the tool among its counterparties, not which payments went through
+  it). The
+  owner's complete list of 168 counterparties contains none of those raters and no transfer to or
+  from that funder. On Monad alone the funder was visible behind 8 wallets; across chains it is
+  behind almost all of them, and still nowhere near the owner.
+- **Farms.** For all 13 farmed agents whose owner's counterparty list came back complete, it
+  contains exactly the raters our Monad index already says the owner funded: the same wallets, not
+  just the same count. A second source agrees, and no rater funded by the owner on another chain
+  was missed. Agent 182's owner has more than one page of counterparties (994 of the first 1,000
+  are its raters), so there it confirms the pattern rather than the total.
+
+The direct way to ask "is this funder an exchange", `/profiler/address/labels`, is not sold over
+x402 ("API key required. This endpoint does not support paid access"). The labels used here are
+the ones Nansen attaches inside the two responses above.
+
 Exactly what is used, so this can be checked rather than taken on trust:
 
 | | |
 |---|---|
-| Endpoint | `POST /api/v1/profiler/address/related-wallets` (Profiler), body `{address, chain}` |
+| Endpoints in the verdict | `POST /api/v1/profiler/address/related-wallets`, body `{address, chain}`, $0.01; `POST /api/v1/profiler/address/counterparties`, body `{address, chain: "all", date, group_by: "wallet", pagination}`, $0.05 |
 | Also called | `/profiler/address/first-funder` (chain must be `all`), `/profiler/address/current-balance` |
-| Data categories | First Funder edges, and the entity label attached to the funding address |
-| Access | x402 on Monad, $0.01 a call, no account and no API key. Payment signed as EIP-3009 and settled against USDC at `0x754704Bc…` |
-| Where it lands | `src/buy-nansen.mjs` buys, `src/enrich-nansen.mjs` samples a rater set, `src/serve.mjs` folds it into the verdict, `src/mcp.mjs` exposes it as a tool |
-| What it decided | The label on one funder turned "independent" into "independent of this owner, not of everyone". Without it the headline is wrong |
+| Data categories | First Funder edges; counterparties with in/out volume and per-token transfers across chains; the entity labels attached to both |
+| Access | x402 on Monad, no account and no API key. Payment signed as EIP-3009 and settled against USDC at `0x754704Bc…`. Per-endpoint price ceilings in `src/buy-nansen.mjs` |
+| Where it lands | `src/buy-nansen.mjs` buys, `src/enrich-nansen.mjs` samples a rater set, `src/counterparties.mjs` buys and summarises counterparties, `src/verdict.mjs` folds both into the one verdict that `src/serve.mjs` and `src/mcp.mjs` serve |
+| What it decided | The label on one funder turned "independent" into "independent of this owner, not of everyone"; the counterparties of a ring's funder showed it paying the raters on five tokens, and the owner touching none of it |
 
 On agent #182 the same purchase agrees with the free half instead of correcting it: eleven
 lookups, eleven cents, and every one of the eleven raters was first funded by that agent's own
@@ -240,8 +262,11 @@ This project has now caught itself twice, and both are in the git history on pur
 The per-call ledger over-stated the bill: a rejected call booked a neighbouring call's transfer,
 because its reconciliation window opened five blocks before the request was even sent. The full
 on-chain pass (`src/reconcile.mjs`) assigns every USDC transfer to exactly one delivered answer,
-and the books balance: twenty-four transfers, twenty-four answers, and Nansen has never
-taken a cent it did not answer for.
+and the books balance: every transfer to Nansen has an answer behind it, and Nansen has never
+taken a cent it did not answer for. One transfer has no row in our ledger: a call made on 22
+September by a temporary copy of the service while testing the spending ceiling. It is listed with
+that explanation in `data/settlement-notes.json` and published as `notInLedger` by `/spend`, rather
+than smoothed over.
 
 The provenance count over-stated independence, in the same shape as the thing this project was
 built to expose. The total was published as "three independent ratings network-wide" and it was
@@ -262,6 +287,7 @@ spending in both directions.
 node src/index-erc8004.mjs          # index (add --full to rebuild from the deploy block)
 node src/score.mjs                  # compute provenance -> data/provenance.json
 node src/enrich-nansen.mjs 182 --live --sample 6   # buy first-funder edges, $0.01 each
+node src/counterparties.mjs --live  # buy counterparties for farmed/ring owners and ring funders, $0.05 each
 node src/reconcile.mjs              # re-derive the bill from USDC transfer logs -> data/settlement.json
 node src/farm-map.mjs               # classify every rating for the picture -> web/public/farm.json
 node src/serve.mjs                  # HTTP on :8460

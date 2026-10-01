@@ -1,13 +1,13 @@
 {
- "reconciledAt": "2026-10-01T08:35:14.602Z",
+ "reconciledAt": "2026-10-01T09:33:59.672Z",
  "wallet": "0x9E66867adfDC613891A96d82a53988829cD39004",
  "payTo": [
   "0x93053f1e7A5eFEDa532Fe69CbbE43cBEc3A0F13f"
  ],
  "since": "2026-09-14T11:09:03.700Z",
- "count": 31,
- "totalUsdc": 0.31,
- "deliveredCalls": 30,
+ "count": 40,
+ "totalUsdc": 0.76,
+ "deliveredCalls": 39,
  "unassignedTransfers": 0,
  "explainedTransfers": 1,
  "answersWithoutTransfer": 0,
@@ -227,6 +227,69 @@
    "usdc": 0.01,
    "assignedTo": "2026-09-28T11:30:23.833Z",
    "endpoint": "current-balance"
+  },
+  {
+   "tx": "0x3035e913d4b4291a611cd72c3793c9344e945bc092366f67bd9ed26ad62cf378",
+   "when": "2026-10-01T09:28:13.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:28:13.987Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0x6d678be6865856d3daea6ca17434fa221256b03e5448153142f16a1550f9cbe9",
+   "when": "2026-10-01T09:28:53.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:28:53.407Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0x0ae6024ebfc61af30de2acadb53a1a71f2813fad0e66d848b217f4b233519ffb",
+   "when": "2026-10-01T09:28:58.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:28:58.496Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0xfe18e68c3990b9a1c74bd82636313657b111aa316da7e4045c692bd1a20c13eb",
+   "when": "2026-10-01T09:30:31.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:31.480Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0x30a8517e1a41a62dd1a7ae658b595113dda620ea2b71237bd35fcedee15dce0e",
+   "when": "2026-10-01T09:30:36.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:36.876Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0xece44c566b1ef3e22c6c520022c9d3d8ab806c3e290ab6cb89e7379bcb25b062",
+   "when": "2026-10-01T09:30:43.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:43.740Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0x8a166f937dd67ee9b00bd1bb1763a9dd12b031de990e2d3c4e1753adb6689a58",
+   "when": "2026-10-01T09:30:49.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:49.427Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0x80b982f8ab6e9d99b66496b9724e0a61f5879ee11cdeb8acbe035c06ef57941b",
+   "when": "2026-10-01T09:30:53.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:53.553Z",
+   "endpoint": "counterparties"
+  },
+  {
+   "tx": "0xa4b649bb24bcc2de3a3dc0c7860369d31f4990d310aeee68958fff30ef354931",
+   "when": "2026-10-01T09:30:59.000Z",
+   "usdc": 0.05,
+   "assignedTo": "2026-10-01T09:30:59.849Z",
+   "endpoint": "counterparties"
   }
  ]
 }

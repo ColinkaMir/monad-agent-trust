@@ -19,6 +19,10 @@ node src/farm-map.mjs
 # Кто оплатил кольца: один запрос к HyperSync на кольцевого агента, их единицы. Шаг после
 # provenance, потому что список колец берётся из него.
 node src/ring-funders.mjs
+# Nansen counterparties: never buys here (no --live), only re-summarises what was bought, so a
+# verdict that moved overnight does not keep quoting yesterday's agent list. Needs the API up,
+# which it is: the restart comes later in this script and the old process still answers.
+node src/counterparties.mjs
 
 SRC=web/public/farm.json
 DST=/var/www/proofline-public/monad/agent-trust/farm.json
