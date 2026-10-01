@@ -448,16 +448,27 @@ createServer(async (req, res) => {
       usdcSpent: settled
         ? settled.totalUsdc
         : +lines.reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
-      usdcAuthorized: +lines.reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
+      // What our own wallet signed. A delegated call is paid from the visitor's wallet and is
+      // counted separately, so it cannot pad the gap between this and the chain's figure.
+      usdcAuthorized: +lines
+        .filter((l) => !l.payer || l.payer.toLowerCase() === AGENT_WALLET.toLowerCase())
+        .reduce((n, l) => n + (l.paidUsdc ?? 0), 0).toFixed(6),
       delivered: lines.filter((l) => l.delivered).length,
+      delegatedCalls: lines.filter((l) => l.payer && l.payer.toLowerCase() !== AGENT_WALLET.toLowerCase()).length,
       paidButNotDelivered: settled
         ? settled.unassignedTransfers
         : lines.filter((l) => !l.delivered && l.onChainTransfers > 0).length,
+      // Transfers with no ledger row whose answer is accounted for in data/settlement-notes.json.
+      // Published with the note, so "explained" is something a reader can check, not a waiver.
+      notInLedger: settled
+        ? (settled.transfers ?? []).filter((t) => t.note).map((t) => ({ tx: t.tx, when: t.when, note: t.note }))
+        : [],
       missingSettlementHeader: lines.filter((l) => l.delivered && !l.settlementHeader).length,
       reconciledAt: settled?.reconciledAt ?? null,
       note: settled
-        ? "usdcSpent is the sum of USDC transfers on chain; usdcAuthorized is what the signed "
-          + "x402 authorizations added up to. The gap is calls rejected before settlement."
+        ? "usdcSpent is the sum of USDC transfers from our wallet on chain; usdcAuthorized is what "
+          + "our signed x402 authorizations added up to. Calls rejected before settlement make the "
+          + "chain figure lower, transfers listed in notInLedger make it higher."
         : "run src/reconcile.mjs for the on-chain figure; until then usdcSpent trusts the ledger",
       purchases: lines.slice(-25),
     });

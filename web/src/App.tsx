@@ -77,6 +77,7 @@ type Spend = {
   delivered: number;
   paidButNotDelivered: number;
   missingSettlementHeader: number;
+  notInLedger?: { tx: string; when: string; note: string }[];
   purchases: { at: string; about: string; paidUsdc: number; tx: string | null; delivered: boolean }[];
 };
 
@@ -239,6 +240,11 @@ function Bill() {
       <span>{spend.delivered} delivered</span>
       {spend.paidButNotDelivered > 0 && <span className="bad-n">{spend.paidButNotDelivered} paid, nothing back</span>}
       {spend.missingSettlementHeader > 0 && <span className="warn-n">{spend.missingSettlementHeader} without a settlement header</span>}
+      {(spend.notInLedger?.length ?? 0) > 0 && (
+        <span title={spend.notInLedger!.map((t) => `${t.tx}: ${t.note}`).join("\n\n")}>
+          {spend.notInLedger!.length} paid outside the ledger, explained
+        </span>
+      )}
     </div>
   );
 }

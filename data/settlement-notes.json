@@ -1,0 +1,3 @@
+{
+  "0xae4e738af03574a9133bdaf2fe524526088629cc04a23d4e505fc7c126e72f97": "2026-09-22: one call made by a temporary copy of the service while testing the daily spending ceiling (the first version of the ceiling let this call through, which is how the leak was found). The copy's ledger was not kept, so there is no ledger row; the answer was received, per our own build log, not per a stored response."
+}

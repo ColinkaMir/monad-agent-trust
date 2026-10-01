@@ -1,5 +1,5 @@
 {
- "reconciledAt": "2026-09-28T11:31:02.341Z",
+ "reconciledAt": "2026-10-01T08:35:14.602Z",
  "wallet": "0x9E66867adfDC613891A96d82a53988829cD39004",
  "payTo": [
   "0x93053f1e7A5eFEDa532Fe69CbbE43cBEc3A0F13f"
@@ -7,8 +7,10 @@
  "since": "2026-09-14T11:09:03.700Z",
  "count": 31,
  "totalUsdc": 0.31,
- "deliveredCalls": 31,
- "unassignedTransfers": 1,
+ "deliveredCalls": 30,
+ "unassignedTransfers": 0,
+ "explainedTransfers": 1,
+ "answersWithoutTransfer": 0,
  "transfers": [
   {
    "tx": "0xbac196568f6c61303bcc809358196eb1fdd9c40fb06dcc66527fdaf3fe47e07a",
@@ -175,55 +177,56 @@
    "tx": "0xae4e738af03574a9133bdaf2fe524526088629cc04a23d4e505fc7c126e72f97",
    "when": "2026-09-22T11:23:30.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:15.184Z",
-   "endpoint": "related-wallets"
+   "note": "2026-09-22: one call made by a temporary copy of the service while testing the daily spending ceiling (the first version of the ceiling let this call through, which is how the leak was found). The copy's ledger was not kept, so there is no ledger row; the answer was received, per our own build log, not per a stored response."
   },
   {
    "tx": "0x873a371a38930246ae9d59b68f1b12d6c9418a14432f9f2f3f1519fade93b176",
    "when": "2026-09-28T11:28:14.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:17.007Z",
+   "assignedTo": "2026-09-28T11:28:15.184Z",
    "endpoint": "related-wallets"
   },
   {
    "tx": "0x62ca30d73fecf775190414a055bba9938454df1bbd3d155f2478b2eb150bbf41",
    "when": "2026-09-28T11:28:16.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:18.964Z",
+   "assignedTo": "2026-09-28T11:28:17.007Z",
    "endpoint": "related-wallets"
   },
   {
    "tx": "0xc394c84019f7445a27b605b5243a021174cc0e2cfcdcbbd6ecb544a0792aad9c",
    "when": "2026-09-28T11:28:18.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:20.652Z",
+   "assignedTo": "2026-09-28T11:28:18.964Z",
    "endpoint": "related-wallets"
   },
   {
    "tx": "0x5ac03a7683a150a172efcea645dbf27e8c5563866053f845a3ef932f22227329",
    "when": "2026-09-28T11:28:20.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:22.439Z",
+   "assignedTo": "2026-09-28T11:28:20.652Z",
    "endpoint": "related-wallets"
   },
   {
    "tx": "0x916984c854e7b91176457e3a6775aa2343d3230ec7b09e578c0caf24663c08ff",
    "when": "2026-09-28T11:28:22.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:28:24.253Z",
+   "assignedTo": "2026-09-28T11:28:22.439Z",
    "endpoint": "related-wallets"
   },
   {
    "tx": "0x22cb2f11a3e62cad12bc25d2075aee1848b43bd0dfc9ce659f28ea24d488b967",
    "when": "2026-09-28T11:28:24.000Z",
    "usdc": 0.01,
-   "assignedTo": "2026-09-28T11:30:23.833Z",
-   "endpoint": "current-balance"
+   "assignedTo": "2026-09-28T11:28:24.253Z",
+   "endpoint": "related-wallets"
   },
   {
    "tx": "0x5d179eb24c6bac170c23a9a902a6d5f1accb91779205801f53a7364c104c8ef7",
    "when": "2026-09-28T11:30:23.000Z",
-   "usdc": 0.01
+   "usdc": 0.01,
+   "assignedTo": "2026-09-28T11:30:23.833Z",
+   "endpoint": "current-balance"
   }
  ]
 }
