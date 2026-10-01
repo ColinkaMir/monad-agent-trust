@@ -24,7 +24,7 @@ Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · regis
 The registry counts ratings. On Monad that count is self-produced:
 
 - **10,275** agents registered, **93** ever rated
-- **9,288** ratings in total, **97.0% of them from February 2026**, and **86.6% on three days of it**
+- **9,288** ratings in total, **97.0% of them from February 2026**, and **86.5% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
 - Ratings that survive both provenance filters, across the whole chain: **16 of 9,288**. They come

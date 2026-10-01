@@ -17,3 +17,10 @@ data/indexed.json
 # publishing this file would hand out other people's authorisations, starting with any judge
 # who tries the demo. The six entries already in history are expired and cannot be relayed.
 data/vouchers.json
+
+# Rendered videos and their intermediates: large, reproducible with tools/make-videos.mjs, and the
+# published copies live on the site and on the video host.
+build/video/*.mp4
+build/video/*-list.txt
+build/video/raw/
+build/video/frames/

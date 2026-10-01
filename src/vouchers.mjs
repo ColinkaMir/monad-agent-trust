@@ -133,9 +133,35 @@ export async function balanceOf(address, provider) {
   try { return BigInt(await usdc.balanceOf(address)); } catch { return null; }
 }
 
+/// Retires vouchers the chain already calls used or cancelled. Without this a revocation stayed
+/// invisible: the visitor pressed "cancel the rest", the transaction landed, and the page went on
+/// saying "1 ready" until somebody next tried to spend it (found while recording the demo,
+/// 2026-10-01). Only this address's live vouchers are asked about, a handful of reads at most, and
+/// a failed read changes nothing, so the worst case is the old behaviour rather than a wrong one.
+async function syncWithChain(address, provider) {
+  const db = load();
+  const a = address.toLowerCase();
+  const live = db.vouchers.filter((v) => v.from === a && !v.spentAt && !v.retiredAt);
+  if (!live.length) return;
+  const usdc = new ethers.Contract(
+    USDC, ["function authorizationState(address,bytes32) view returns (bool)"], provider);
+  let changed = false;
+  for (const v of live) {
+    let used = false;
+    try { used = await usdc.authorizationState(v.from, v.nonce); } catch { continue; }
+    if (used) {
+      v.retiredAt = new Date().toISOString();
+      v.retiredBecause = "cancelled or already used on chain";
+      changed = true;
+    }
+  }
+  if (changed) save(db);
+}
+
 /// Signed vouchers, minus the ones the signer cannot currently cover. Returns both numbers,
 /// because "you signed for five and can pay for two" is the honest sentence.
 export async function fundedSummary(address, provider) {
+  await syncWithChain(address, provider);
   const base = summary(address);
   const balance = await balanceOf(address, provider);
   if (balance === null) return { ...base, usdcBalance: null, affordable: null };

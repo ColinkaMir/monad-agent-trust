@@ -80,6 +80,11 @@ export function Delegate() {
     fetch(`${API}/delegation/${address}`).then((r) => r.json()).then(setSummary).catch(() => {});
   }, [address]);
   useEffect(() => { refresh(); }, [refresh]);
+  // The ask box lives outside this panel and announces a spend with this event.
+  useEffect(() => {
+    window.addEventListener("delegation-changed", refresh);
+    return () => window.removeEventListener("delegation-changed", refresh);
+  }, [refresh]);
 
   const delegate = async () => {
     if (!primaryWallet || !address) return;

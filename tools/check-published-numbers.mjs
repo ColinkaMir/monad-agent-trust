@@ -17,8 +17,8 @@ const BASE = process.env.DEMO_BASE ?? "https://prooflines.org/monad/agent-trust"
 // the reader to ignore this tool: the registration card deliberately avoids counts that move
 // daily, and its disclosure sentence quotes a dated historical pair on purpose.
 const FILES = {
-  "README.md": ["registrations", "ratings", "rated agents", "independent ratings"],
-  "agent-registration.json": ["ratings"],
+  "README.md": ["registrations", "ratings", "rated agents", "independent ratings", "february share", "three-day share"],
+  "agent-registration.json": ["ratings", "february share", "three-day share"],
 };
 
 const group = (n) => n.toLocaleString("en-US");
@@ -34,6 +34,8 @@ const live = await (async () => {
     covered: health.totals.agentsCovered,
     independent: buckets.independent,
     ownerFunded: buckets.ownerFunded,
+    februaryShare: farm.februaryShare,
+    threeDayShare: farm.busiestThreeDayShare,
   };
 })();
 
@@ -45,6 +47,10 @@ const CHECKS = [
   ["covered agents", live.covered, [String(live.covered)]],
   ["independent ratings", live.independent, [String(live.independent)]],
   ["owner-funded ratings", live.ownerFunded, [group(live.ownerFunded), String(live.ownerFunded)]],
+  // Shares, not only counts: "86.6%" outlived the data that produced it by three weeks because
+  // this list only knew about counts (found in the demo video, 2026-10-01).
+  ["february share", live.februaryShare, [`${(live.februaryShare * 100).toFixed(1)}%`]],
+  ["three-day share", live.threeDayShare, [`${(live.threeDayShare * 100).toFixed(1)}%`]],
 ];
 
 // Numbers that look like our old figures, so a stale one is named rather than merely missing.

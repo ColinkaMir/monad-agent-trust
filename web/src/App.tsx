@@ -111,6 +111,9 @@ function Answer() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error ?? `HTTP ${r.status}`);
       isAddress ? setWallet(d) : setAgent(d);
+      // A paid answer may have spent one of the visitor's vouchers; the delegation panel only
+      // refetched on sign-in, so it kept showing the voucher as ready until a reload.
+      if (payer) window.dispatchEvent(new Event("delegation-changed"));
     } catch (e: any) {
       setError(String(e.message ?? e));
     } finally {
