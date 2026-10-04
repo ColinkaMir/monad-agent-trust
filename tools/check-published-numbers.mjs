@@ -17,7 +17,9 @@ const BASE = process.env.DEMO_BASE ?? "https://prooflines.org/monad/agent-trust"
 // the reader to ignore this tool: the registration card deliberately avoids counts that move
 // daily, and its disclosure sentence quotes a dated historical pair on purpose.
 const FILES = {
-  "README.md": ["registrations", "ratings", "rated agents", "independent ratings", "february share", "three-day share"],
+  // Registrations grow every day while judging runs to 3 November, so the README says "over
+  // 10,000" and points at /api/health instead of carrying a count that is stale by morning.
+  "README.md": ["ratings", "rated agents", "independent ratings", "february share", "three-day share"],
   "agent-registration.json": ["ratings", "february share", "three-day share"],
 };
 

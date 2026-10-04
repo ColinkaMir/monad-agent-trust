@@ -23,7 +23,7 @@ Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · regis
 
 The registry counts ratings. On Monad that count is self-produced:
 
-- **10,275** agents registered, **93** ever rated
+- **over 10,000** agents registered (the count grows daily; `/api/health` has today's), **93** ever rated
 - **9,288** ratings in total, **97.0% of them from February 2026**, and **86.5% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
@@ -65,7 +65,7 @@ wallet that was paid to hold an opinion.
 | **Show** | All 9,288 ratings drawn one dot each, because the claim is a ratio of 16 to 9,288 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
-with the sentence that justifies it. `not covered` is a real answer: 93 of 10,275 agents have ever
+with the sentence that justifies it. `not covered` is a real answer: 93 of more than 10,000 agents have ever
 been rated, so most questions have no evidence either way and saying so beats inventing a number.
 
 ## Two shapes of the same lie

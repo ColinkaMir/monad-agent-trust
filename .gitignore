@@ -24,3 +24,5 @@ build/video/*.mp4
 build/video/*-list.txt
 build/video/raw/
 build/video/frames/
+
+build/video/voice/
