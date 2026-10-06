@@ -23,11 +23,11 @@ Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · regis
 
 The registry counts ratings. On Monad that count is self-produced:
 
-- **over 10,000** agents registered (the count grows daily; `/api/health` has today's), **93** ever rated
-- **9,288** ratings in total, **97.0% of them from February 2026**, and **86.5% on three days of it**
+- **over 10,000** agents registered (the count grows daily; `/api/health` has today's), **94** ever rated
+- **9,291** ratings in total, **97.0% of them from February 2026**, and **86.5% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
-- Ratings that survive both provenance filters, across the whole chain: **16 of 9,288**. They come
+- Ratings that survive both provenance filters, across the whole chain: **16 of 9,291**. They come
   from **2 wallets**, and one of those two produced 15 of the 16 by rating the same two agents over
   and over. Buying the funding history of both leaves **one wallet** that nothing is known against
 
@@ -62,10 +62,10 @@ wallet that was paid to hold an opinion.
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
 | **Buy** | What Monad cannot show: who funded a rater *first, anywhere*, and whom an owner or a ring's funder paid on *any* chain. Bought from Nansen over x402, on Monad: $0.01 and $0.05 a call |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
-| **Show** | All 9,288 ratings drawn one dot each, because the claim is a ratio of 16 to 9,288 and a table reads that as "some good, some bad" |
+| **Show** | All 9,291 ratings drawn one dot each, because the claim is a ratio of 16 to 9,291 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
-with the sentence that justifies it. `not covered` is a real answer: 93 of more than 10,000 agents have ever
+with the sentence that justifies it. `not covered` is a real answer: 94 of more than 10,000 agents have ever
 been rated, so most questions have no evidence either way and saying so beats inventing a number.
 
 ## Two shapes of the same lie
@@ -182,7 +182,7 @@ looks independent, and the answer came back split:
 | `0x794c94f1` | agent 4 | `0xdf747918` | Nansen labels it **🤖 Distributor**, a wallet whose business is funding many wallets. Independent of *this* owner, not independent of everyone |
 | `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it |
 
-So the free filters leave 16 ratings out of 9,288, produced by 2 wallets across 3 agents, and
+So the free filters leave 16 ratings out of 9,291, produced by 2 wallets across 3 agents, and
 after the purchase exactly one of those wallets has a provenance with nothing against it. The
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
@@ -314,8 +314,8 @@ measured coordinated reviewers at 73.5%, 59.2% and 90.6% on Ethereum, BSC and Ba
 directions of ours died on that same check before a line of code was written, which is what the
 check is for.
 
-Limits: provenance is computed for agents with at least five ratings (32 agents,
-9205 of 9,288 events); purchased corroboration is sampled, not exhaustive, because each lookup
+Limits: provenance is computed for agents with at least five ratings (33 agents,
+9210 of 9,291 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
 so even the one wallet left standing is an upper bound rather than a floor. That upper bound has
 already moved once: it was three before we bought the funding history, and buying it is what
