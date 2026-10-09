@@ -70,6 +70,13 @@ Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`
 with the sentence that justifies it. `not covered` is a real answer: about one in a hundred of more than
 10,000 agents has ever been rated, so most questions have no evidence either way and saying so beats inventing a number.
 
+Every answer also says who **sent** the ratings. ERC-8004 records the rater, but when the rater is a
+smart account or an EIP-7702 account, the transaction that writes the rating can come from someone
+else. On Monad 206 ratings were written that way, and 150 of them were sent by the rated agent's own
+owner, on 21 agents: on the ring agent 10182, 36 of its 78. Those answers carry `ownerSentRatings`
+with an example transaction, and the sentence is added to the verdict rather than replacing it
+(`src/senders.mjs`, one HyperSync stream with transactions joined).
+
 ## Two shapes of the same lie
 
 The February wave and the one that arrived on 27 September, while this was being built, are

@@ -1,0 +1,153 @@
+{
+ "generatedAt": "2026-10-09T12:16:02.102Z",
+ "scanSeconds": 57.1,
+ "ratings": 9296,
+ "thirdParty": 206,
+ "ownerSent": 150,
+ "agents": {
+  "129": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 0,
+   "example": null
+  },
+  "150": {
+   "ratings": 2,
+   "thirdParty": 2,
+   "ownerSent": 0,
+   "example": null
+  },
+  "153": {
+   "ratings": 53,
+   "thirdParty": 52,
+   "ownerSent": 6,
+   "example": "0x43f42202c023cabd906303c83963a8094b4d1e6a7a4d7487e12fc38872c1c49a"
+  },
+  "154": {
+   "ratings": 13,
+   "thirdParty": 13,
+   "ownerSent": 11,
+   "example": "0x2c87777af86b36dd595a11bb5fdb21544cfe6c9ac0efa9840a0840da14d18c86"
+  },
+  "155": {
+   "ratings": 10,
+   "thirdParty": 10,
+   "ownerSent": 9,
+   "example": "0x75b314d11696e7da72edbc152bfecd7adc2e358a4a287260346bb44e163a5e5e"
+  },
+  "156": {
+   "ratings": 11,
+   "thirdParty": 11,
+   "ownerSent": 9,
+   "example": "0x1b01b62c3b213e3514e233987ded00055aef390b2a2307c0221328093898b885"
+  },
+  "157": {
+   "ratings": 10,
+   "thirdParty": 9,
+   "ownerSent": 9,
+   "example": "0x4e84721f8cee0e7020afbe320597dcf064cc5b84fcbdb0841e3e6d7cc7b936c0"
+  },
+  "158": {
+   "ratings": 9,
+   "thirdParty": 9,
+   "ownerSent": 8,
+   "example": "0x87e2ec1d1b1ea704f68a0810fad2b3d06041cc00afc79d515e8812e38d1d02b0"
+  },
+  "8358": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10167": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 1,
+   "example": "0x73918983e265a6aadb7ecc2c2f4fbf46e160563073f0a2698b457010260cc9b0"
+  },
+  "10168": {
+   "ratings": 4,
+   "thirdParty": 3,
+   "ownerSent": 3,
+   "example": "0x3cc3dd6742c3636e5a1ee940284ceac87a55b906f5f0a8e535be4c9b4872b3d1"
+  },
+  "10169": {
+   "ratings": 5,
+   "thirdParty": 4,
+   "ownerSent": 4,
+   "example": "0x2b7fe72ae8cbc8e2fc5386541162586646c133f487eadcf2300f1a6a686f43e8"
+  },
+  "10180": {
+   "ratings": 13,
+   "thirdParty": 6,
+   "ownerSent": 6,
+   "example": "0x7e87577396689cbbc8936e4efd8ddb8012a476d815043e8935fa5c6d3b6f5d18"
+  },
+  "10181": {
+   "ratings": 37,
+   "thirdParty": 18,
+   "ownerSent": 18,
+   "example": "0x10a72c3c753d906d4bf384ef4f3844a4c658eb2ed27ea6282e56f0214a72f720"
+  },
+  "10182": {
+   "ratings": 78,
+   "thirdParty": 36,
+   "ownerSent": 36,
+   "example": "0x4552356714fa1482c0346c03726507a8b9a3bda37742a030250f8296a5f616b5"
+  },
+  "10184": {
+   "ratings": 5,
+   "thirdParty": 5,
+   "ownerSent": 5,
+   "example": "0x6e8aa2dc4af543aa0c5f21ad0356f4d90517f4b1a27f7a803d9d1d23613d0745"
+  },
+  "10188": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 1,
+   "example": "0x888c878bac823af036c01f92308b57675be11633f2db5c44ff978c253b3b812c"
+  },
+  "10189": {
+   "ratings": 2,
+   "thirdParty": 2,
+   "ownerSent": 2,
+   "example": "0x024fac4390769ad47eda37810db96fe2117ee39ad2c773dc04cb2e4dac908cc9"
+  },
+  "10190": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 1,
+   "example": "0xc918f0d62fc1a6958bf75192d4b2741ded734a1589ba93508075a1bf8fe70247"
+  },
+  "10220": {
+   "ratings": 5,
+   "thirdParty": 5,
+   "ownerSent": 5,
+   "example": "0xe22312ce0e08b8ac14c6a9aa10949e5cfa6d2bd97cc9760f11ef8c94c912b0a3"
+  },
+  "10221": {
+   "ratings": 3,
+   "thirdParty": 2,
+   "ownerSent": 2,
+   "example": "0x10f6c74c8696a8f55aaa2096bf0bb544654afd5dd5ee8c84234266f75ed975a4"
+  },
+  "10223": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 1,
+   "example": "0xaee2f633f8a645b39182bdb15125fd094b5863e0efde1e10811c980d0155df3d"
+  },
+  "10261": {
+   "ratings": 12,
+   "thirdParty": 12,
+   "ownerSent": 12,
+   "example": "0x2b7162b96e46ee0ba6b24dfdb0d6f9cf0a0128e62c86af9ca1c54a86325259aa"
+  },
+  "10262": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 1,
+   "example": "0x6b8853f762a6b7b359782364ef473b9a37caf827e515146ef67362e2cd701c54"
+  }
+ }
+}

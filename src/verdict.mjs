@@ -117,9 +117,36 @@ export function corroboration(e) {
     + `sampled raters, which is what unrelated origins look like.`);
 }
 
+/// Who sent each rating, from src/senders.mjs: ratings written by a transaction from somebody other
+/// than the rater, and how many of those came from the rated agent's own owner.
+export const senders = () =>
+  existsSync("data/senders.json")
+    ? JSON.parse(readFileSync("data/senders.json", "utf8"))
+    : { agents: {} };
+
+/// The sentence and the field for ratings the owner sent itself. Added to whatever the verdict is
+/// rather than becoming a verdict of its own: it is a fact about how the ratings were written,
+/// and on the agents where it occurs the verdict already says the record is not earned.
+export function ownerSent(agentId) {
+  const s = senders().agents?.[agentId];
+  if (!s?.ownerSent) return null;
+  return {
+    field: { ratings: s.ownerSent, of: s.ratings, example: s.example },
+    sentence: ` ${s.ownerSent} of its ${s.ratings} ratings were sent by the agent's own owner, as a `
+      + `transaction from the owner to the rater's account, so they were written on the owner's own `
+      + `initiative.`,
+  };
+}
+
 /// Plain-language reading of the numbers. Deliberately blunt: the point of the project is that
 /// a count of ratings means nothing here, so the verdict says why rather than scoring 0-100.
 export function verdict(a) {
+  const v = baseVerdict(a);
+  const o = a && ownerSent(a.agentId);
+  return o ? { ...v, why: v.why + o.sentence, ownerSentRatings: o.field } : v;
+}
+
+function baseVerdict(a) {
   if (!a) return { verdict: "unknown", why: "no feedback on this agent at all" };
   if (a.ownerFunded > 0 && a.independentPaid === 0) {
     return {
@@ -221,6 +248,13 @@ export function uncovered(agentId) {
       why: `agent ${id} is not registered in the ERC-8004 registry on Monad, as of our index at ${r.indexedAt}` };
   }
   const n = r.counts.get(id) ?? 0;
+  const o = ownerSent(id);
+  if (o) {
+    return { ...base, registered: true, owner: r.owners.get(id), ratings: n, ownerSentRatings: o.field,
+      why: `agent ${id} has ${n} rating${n === 1 ? "" : "s"}, too few for a provenance verdict, but `
+        + (o.field.ratings === 1 && n === 1 ? "it was" : `${o.field.ratings} of them were`)
+        + ` sent by the agent's own owner, as a transaction from the owner to the rater's account` };
+  }
   return { ...base, registered: true, owner: r.owners.get(id), ratings: n,
     why: n === 0
       ? `agent ${id} is registered but has never been rated, so there is nothing to judge`
