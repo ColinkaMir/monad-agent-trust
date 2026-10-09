@@ -135,13 +135,18 @@ curl "$BASE/wallet/0x97cd…996?payer=0xYourAddress"
 An agent about to transact with another agent does not open a web page, it calls a tool.
 
 ```jsonc
-// claude_desktop_config.json, or any MCP client's server list
+// any MCP client that speaks Streamable HTTP: nothing to install
+{ "mcpServers": { "agent-trust": { "url": "https://prooflines.org/monad/agent-trust/mcp" } } }
+
+// or run your own copy over stdio
 { "mcpServers": { "agent-trust": { "command": "node", "args": ["/path/to/src/mcp.mjs"] } } }
 ```
 
 Three tools, and the split is deliberate: `agent_trust` and `trust_summary` read the index and are
 free, `wallet_trust` buys a Nansen signal for $0.01 and only when the caller passes `buy: true`.
-Nothing spends money unless it was asked to.
+Nothing spends money unless it was asked to. The hosted endpoint never buys at all: it would be
+spending the service's own key on a stranger's behalf, so there `buy: true` answers with how to pay
+for the question from your own wallet instead. Your own copy over stdio buys with your own key.
 
 ## Integrating it
 
@@ -297,6 +302,7 @@ node src/reconcile.mjs              # re-derive the bill from USDC transfer logs
 node src/farm-map.mjs               # classify every rating for the picture -> web/public/farm.json
 node src/serve.mjs                  # HTTP on :8460
 node src/mcp.mjs                    # MCP over stdio
+node src/mcp-http.mjs               # the same tools over Streamable HTTP on :8461/mcp, never buys
 curl 'localhost:8460/wallet/0xabc…?payer=0xyou'   # spends one of the payer's delegated vouchers
 cd web && npm run build && npm run preview        # the page
 cd indexer && ENVIO_API_TOKEN=... pnpm envio dev  # HyperIndex + GraphQL on :8080
