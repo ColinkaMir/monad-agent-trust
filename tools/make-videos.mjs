@@ -492,9 +492,12 @@ const ENVIO = async () => {
   await scene("e1-query", async (page, begin) => {
     await page.setContent(TERM);
     begin();
+    // The line describes the query being typed, so it starts with the typing instead of after it:
+    // waiting for the command left four silent seconds after the title card.
+    await caption(page, CAP.c25, 0, { block: false });
     await termType(page, "grep -A7 'client.stream' src/index-erc8004.mjs | head -8");
     await termLine(page, esc(query));
-    await caption(page, CAP.c25, 9);
+    await page.waitForTimeout(3000);
   });
 
   await scene("e2-catchup", async (page, begin) => {
