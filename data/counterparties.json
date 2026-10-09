@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-09T11:36:11.444Z",
+ "generatedAt": "2026-10-09T17:22:01.944Z",
  "source": "https://api.nansen.ai/api/v1/profiler/address/counterparties",
  "pricePerCallUsdc": 0.05,
  "scope": "owners of agents whose verdict is farmed or ring, and ring funders covering 3+ raters",

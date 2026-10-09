@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-10-09T11:35:39.994Z",
- "indexedAt": "2026-10-09T11:35:39.862Z",
+ "generatedAt": "2026-10-09T17:21:32.454Z",
+ "indexedAt": "2026-10-09T17:21:32.331Z",
  "source": "Monad mainnet via Envio HyperSync",
  "covers": "agents with at least 5 feedback events",
  "method": "For each rated agent we read every native transfer touching the agent owner and ask two questions the registry cannot answer: did the rating wallet pay the agent BEFORE it rated, and had the owner funded that wallet in the first place. A payment on its own proves nothing: on the most-rated agent every rater had paid, and every rater had been funded.",
