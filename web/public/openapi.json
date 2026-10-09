@@ -1,0 +1,476 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Receipts: provenance for ERC-8004 reputation on Monad",
+    "version": "1.0.0",
+    "description": "Is an ERC-8004 agent's reputation on Monad backed by money its own owner did not put there? Every answer is words (verdict, why) plus a stable code, the evidence that would change it, and the block the data was read at. Reads are free and need no key. The same tools are served over MCP at https://prooflines.org/monad/agent-trust/mcp.",
+    "license": {
+      "name": "GPL-3.0-only",
+      "identifier": "GPL-3.0-only"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://prooflines.org/monad/agent-trust/api"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "What the service is, when it last indexed, and network-wide totals",
+        "responses": {
+          "200": {
+            "description": "Service status and totals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "health"
+      }
+    },
+    "/agents": {
+      "get": {
+        "summary": "Every covered agent (five or more ratings) with its verdict",
+        "responses": {
+          "200": {
+            "description": "All covered agents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "covers": {
+                      "type": "string"
+                    },
+                    "agents": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AgentVerdict"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "listAgents"
+      }
+    },
+    "/agent/{id}": {
+      "get": {
+        "summary": "One agent's provenance verdict",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 182
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A covered agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentVerdict"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No verdict: not registered, never rated, or fewer than five ratings. The reason is in `error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Uncovered"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "getAgent"
+      }
+    },
+    "/wallet/{address}": {
+      "get": {
+        "summary": "What an address owns among rated agents, plus optionally one purchased Nansen signal",
+        "description": "Buys only when the caller names a payer that has delegated a one-cent EIP-3009 authorisation (see /delegate), or when `buy` is not 0 and the operator allows the house to pay. Pass buy=0 to read the free half only.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          },
+          {
+            "name": "payer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Address whose delegated authorisation pays for this answer"
+          },
+          {
+            "name": "buy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0"
+              ]
+            },
+            "description": "0 = never buy"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned agents with verdicts and the purchase, if any",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "getWallet"
+      }
+    },
+    "/spend": {
+      "get": {
+        "summary": "The public bill: every Nansen purchase, its price and the transaction that paid it, reconciled against USDC transfer logs",
+        "responses": {
+          "200": {
+            "description": "The bill",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "getSpend"
+      }
+    },
+    "/agent-wallet": {
+      "get": {
+        "summary": "The service's own wallet and balance, so a caller can see what funds its answers",
+        "responses": {
+          "200": {
+            "description": "Address and balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "getAgentWallet"
+      }
+    },
+    "/delegate": {
+      "post": {
+        "summary": "Hand over signed EIP-3009 TransferWithAuthorization vouchers (USDC on Monad) so your own questions are paid from your wallet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "vouchers"
+                ],
+                "properties": {
+                  "vouchers": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Voucher"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Which vouchers were accepted, and a funded summary for the signer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body is not JSON"
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "delegate"
+      }
+    },
+    "/delegation/{address}": {
+      "get": {
+        "summary": "How many questions an address has signed for, and how many its balance can actually cover",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delegation summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited: ten requests a second per address, bursts of 40"
+          }
+        },
+        "operationId": "getDelegation"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentVerdict": {
+        "type": "object",
+        "required": [
+          "agentId",
+          "verdict",
+          "code",
+          "why"
+        ],
+        "properties": {
+          "agentId": {
+            "type": "integer"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "farmed",
+              "single-source",
+              "partly-backed",
+              "ring",
+              "burst",
+              "thin"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "FARMED",
+              "SINGLE_SOURCE",
+              "PARTLY_BACKED",
+              "RING",
+              "BURST",
+              "THIN"
+            ]
+          },
+          "why": {
+            "type": "string",
+            "description": "The sentence that justifies the verdict"
+          },
+          "wouldChange": {
+            "type": "string",
+            "description": "The evidence that would move this verdict"
+          },
+          "readAtBlock": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "feedback": {
+            "type": "integer"
+          },
+          "raters": {
+            "type": "integer"
+          },
+          "ownerFunded": {
+            "type": "integer"
+          },
+          "paidBefore": {
+            "type": "integer"
+          },
+          "independentPaid": {
+            "type": "integer"
+          },
+          "ownerSentRatings": {
+            "type": "object",
+            "description": "Ratings the agent's own owner sent through the rater's account",
+            "properties": {
+              "ratings": {
+                "type": "integer"
+              },
+              "of": {
+                "type": "integer"
+              },
+              "example": {
+                "type": "string"
+              }
+            }
+          },
+          "ownerFundedToRate": {
+            "type": "object",
+            "description": "This agent's owner is one of the wallets another agent's owner funded to rate it",
+            "properties": {
+              "farmAgent": {
+                "type": "integer"
+              },
+              "fundedRaters": {
+                "type": "integer"
+              }
+            }
+          },
+          "corroboration": {
+            "type": "object",
+            "description": "Nansen first-funder purchase, if one was bought"
+          },
+          "counterparties": {
+            "type": "object",
+            "description": "Nansen counterparties purchase, if one was bought"
+          }
+        }
+      },
+      "Uncovered": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Why there is no verdict, in words"
+          },
+          "agentId": {
+            "type": "integer"
+          },
+          "verdict": {
+            "const": "not covered"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "NOT_REGISTERED",
+              "NO_RATINGS",
+              "TOO_FEW_RATINGS"
+            ]
+          },
+          "wouldChange": {
+            "type": "string"
+          },
+          "registered": {
+            "type": "boolean"
+          },
+          "ratings": {
+            "type": "integer"
+          },
+          "minimum": {
+            "type": "integer"
+          },
+          "readAtBlock": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "Voucher": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "value",
+          "validAfter",
+          "validBefore",
+          "nonce",
+          "signature"
+        ],
+        "description": "An EIP-3009 TransferWithAuthorization for USDC on Monad, one cent, to the data seller",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "validAfter": {
+            "type": "string"
+          },
+          "validBefore": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "signature": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

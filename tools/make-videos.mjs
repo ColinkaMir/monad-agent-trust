@@ -344,6 +344,10 @@ const DEMO = async () => {
     await caption(page, CAP.c14, 9);
   });
 
+  await DEMO_TAIL();
+};
+
+const DEMO_TAIL = async () => {
   await scene("d8-refusal", async (page, begin) => {
     await page.goto(SITE, { waitUntil: "networkidle" });
     await page.waitForSelector(".card .verdict");
@@ -588,6 +592,26 @@ function assemble(prefix, outName) {
 }
 
 mkdirSync(OUT, { recursive: true });
+// Re-records only the demo's last scene and splices it onto the published demo, for when the last
+// caption's bound ("fewer than a hundred ... rated") stops holding during judging. The wallet scene
+// is untouched, so this spends nothing. Writes receipts-demo-tail.mp4 next to the demo; replacing
+// the published file is a separate, deliberate step.
+if (which === "demo-tail") {
+  console.log("re-recording the demo's last scene");
+  await DEMO_TAIL();
+  assemble("d8", "demo-tail-scene.mp4");
+  const head = ["d0-title", "d1-question", "d2-farm", "d3-bought", "d4-ring", "d5-map", "d6-wallet", "d7-sentinel"]
+    .map((n) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+      join(OUT, `${n}.mp4`)]).toString()))
+    .reduce((x, y) => x + y, 0);
+  const demo = join(OUT, "receipts-demo.mp4"), tail = join(OUT, "demo-tail-scene.mp4");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", demo, "-i", tail, "-filter_complex",
+    `[0:v]trim=0:${head.toFixed(3)},setpts=PTS-STARTPTS[v0];[0:a]atrim=0:${head.toFixed(3)},asetpts=PTS-STARTPTS[a0];`
+    + "[1:v]setpts=PTS-STARTPTS[v1];[1:a]asetpts=PTS-STARTPTS[a1];[v0][a0][v1][a1]concat=n=2:v=1:a=1[v][a]",
+    "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "19", "-c:a", "aac", "-b:a", "160k",
+    "-movflags", "+faststart", join(OUT, "receipts-demo-tail.mp4")]);
+  console.log(`receipts-demo-tail.mp4: the published demo up to ${head.toFixed(2)} s, then the new last scene`);
+}
 if (which === "envio") {
   console.log("recording the Envio clip");
   await ENVIO();

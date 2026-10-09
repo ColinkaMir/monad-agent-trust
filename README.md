@@ -124,7 +124,9 @@ seven agents is not a ring and calling it one would be the same overreach this p
 ## API
 
 Base URL `https://prooflines.org/monad/agent-trust/api`, or `http://127.0.0.1:8460` when self-hosted.
-Everything is JSON, everything is `GET` unless marked, and nothing needs a key.
+Everything is JSON, everything is `GET` unless marked, and nothing needs a key. OpenAPI 3.1
+description: [`openapi.json`](https://prooflines.org/monad/agent-trust/openapi.json). Ten requests a
+second per address, bursts of 40; above that the answer is `429`.
 
 Every agent answer carries `verdict` (words) and `code` (`FARMED`, `SINGLE_SOURCE`, `PARTLY_BACKED`,
 `RING`, `BURST`, `THIN`, or for uncovered agents `NOT_REGISTERED`, `NO_RATINGS`, `TOO_FEW_RATINGS`),
