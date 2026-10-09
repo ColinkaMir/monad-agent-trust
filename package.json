@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check:numbers": "node tools/check-published-numbers.mjs",
-    "check:site": "node tools/audit-site.mjs"
+    "check:site": "node tools/audit-site.mjs",
+    "check:hyperindex": "node tools/check-hyperindex.mjs"
   },
   "keywords": [],
   "author": "",

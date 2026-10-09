@@ -6,7 +6,10 @@ The provenance pipeline in `../src` reads the same events through HyperSync dire
 also needs a second pass over the agent owners' transfer history, which an event indexer does not
 model. This covers the registry half properly and serves it over GraphQL.
 
-Run it:
+Hosted on Envio, public, no key: `https://indexer.dev.hyperindex.xyz/6640c26/v1/graphql`
+(deployed from the `envio` branch).
+
+Run it yourself:
 
 ```bash
 ENVIO_API_TOKEN=$(cat ~/.envio-token) pnpm envio dev   # Postgres + Hasura in Docker

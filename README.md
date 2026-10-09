@@ -220,8 +220,21 @@ over both registries: it recovered the rating **value** our first pass discarded
 distinct-rater count. `src/index-erc8004.mjs` uses HyperSync directly for the part an event indexer
 does not model, the owners' transfer history: one owner here has 15,411 transactions and explorer
 pagination caps at 1,000 rows a page. Full history in about two minutes (46s on 17 September; the
-registry has grown since), catch-up in **0.18s**, on the free tier's 30 requests a minute. The two pipelines are independent and agree on every covered agent,
-which is the only reason to trust either.
+registry has grown since), catch-up in **0.18s**, on the free tier's 30 requests a minute. The two
+pipelines are independent and agree on every covered agent, which is the only reason to trust either:
+`npm run check:hyperindex` compares owner, rating count and distinct raters agent by agent (33 of 33
+on 9 October).
+
+The HyperIndex runs on Envio's hosted service and anyone can query it, no key:
+
+```bash
+curl -s https://indexer.dev.hyperindex.xyz/6640c26/v1/graphql -H 'content-type: application/json' \
+  -d '{"query":"{ Agent(where:{id:{_eq:\"182\"}}){ owner feedbackCount raterCount } }"}'
+# {"data":{"Agent":[{"owner":"0x97cd…0996","feedbackCount":7665,"raterCount":7665}]}}
+```
+
+It deploys from the `envio` branch, so the daily data commits on `main` do not redeploy it. Its
+historical sync of both registries, 19,624 events, took about a minute.
 
 **Nansen.** Not a panel of their data; an input to a verdict. `/profiler/address/related-wallets`
 returns a First Funder edge and an entity label for a wallet, for $0.01, paid over x402 on Monad
