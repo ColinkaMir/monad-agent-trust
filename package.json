@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "check:numbers": "node tools/check-published-numbers.mjs",
     "check:site": "node tools/audit-site.mjs"
   },
