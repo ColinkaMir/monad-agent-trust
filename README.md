@@ -1,5 +1,7 @@
 # Does this agent deserve its reputation?
 
+[![test](https://github.com/ColinkaMir/monad-agent-trust/actions/workflows/test.yml/badge.svg)](https://github.com/ColinkaMir/monad-agent-trust/actions/workflows/test.yml)
+
 **A provenance primitive for ERC-8004 reputation on Monad: an HTTP API and an MCP server that other
 agents and applications call before they trust a counterparty.** The web page is the shop window,
 not the product. Anything the page shows, a program can ask for in one request.
