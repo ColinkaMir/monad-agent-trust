@@ -65,8 +65,8 @@ wallet that was paid to hold an opinion.
 | **Show** | All 9,293 ratings drawn one dot each, because the claim is a ratio of 16 to 9,293 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
-with the sentence that justifies it. `not covered` is a real answer: 94 of more than 10,000 agents have ever
-been rated, so most questions have no evidence either way and saying so beats inventing a number.
+with the sentence that justifies it. `not covered` is a real answer: fewer than a hundred of more than 10,000
+agents have ever been rated, so most questions have no evidence either way and saying so beats inventing a number.
 
 ## Two shapes of the same lie
 
@@ -110,7 +110,10 @@ Everything is JSON, everything is `GET` unless marked, and nothing needs a key.
 Two details worth knowing before you integrate:
 
 - **`/agent/:id` returns `404` with a reason, not an empty object**, when an agent has fewer than the
-  covered minimum of five ratings. Most agents are in that state, and saying so is the honest answer.
+  covered minimum of five ratings. The reason says which case it is: not registered as of the index,
+  registered and never rated, or rated fewer than five times; `registered` and `ratings` carry the
+  same as fields. Most agents are in that state, our own (10253, never rated) included, and saying so
+  is the honest answer. The MCP tool `agent_trust` returns the same.
 - **The paid half never fires by accident.** `/wallet/:address` buys only when the caller brings a
   delegated voucher (`?payer=0x…`) or the operator has set `AGENT_PAYS_FOR_STRANGERS=1`. Otherwise it
   returns the free half with `purchasedSignal.bought: false` and the reason. Pass `?buy=0` to state

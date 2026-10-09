@@ -2,7 +2,7 @@
 // trusted", and they used to carry separate copies of this logic; the MCP copy quietly fell a
 // leg behind (no ring funder) while the HTTP one moved on. Two answers to one question is the
 // drift this project exists to point out in other people's numbers, so there is one copy now.
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 
 /// Who funded the raters of a ring, from src/ring-funders.mjs. Separate from the provenance pass
 /// because that one walks agent OWNERS, and the whole point of a ring is that the money came from
@@ -192,4 +192,41 @@ export function verdict(a) {
          + `event rather than a history.` };
   }
   return { verdict: "thin", why: "ratings exist but nothing in them is payment-backed." };
+}
+
+// The registry as indexed, reduced to what an uncovered answer needs. Read once per index refresh
+// (the file is a few megabytes, and the API serves many questions between refreshes).
+let registryCache = { mtimeMs: -1, owners: new Map(), counts: new Map(), indexedAt: null, minimum: 5 };
+function registry() {
+  if (!existsSync("data/indexed.json")) return registryCache;
+  const mtimeMs = statSync("data/indexed.json").mtimeMs;
+  if (mtimeMs === registryCache.mtimeMs) return registryCache;
+  const d = JSON.parse(readFileSync("data/indexed.json", "utf8"));
+  const owners = new Map(d.registrations.map((r) => [r.agentId, r.owner]));
+  const counts = new Map();
+  for (const f of d.feedback) counts.set(f.agentId, (counts.get(f.agentId) ?? 0) + 1);
+  registryCache = { mtimeMs, owners, counts, indexedAt: d.indexedAt, minimum: d.minFeedback ?? 5 };
+  return registryCache;
+}
+
+/// Why there is no verdict for an agent that provenance does not cover, said precisely. "Fewer
+/// than the minimum, or does not exist" lumped three different facts together, and one of them
+/// (registered, never rated) is the honest state of most agents, including our own.
+export function uncovered(agentId) {
+  const r = registry();
+  const id = Number(agentId);
+  const base = { agentId: id, verdict: "not covered", minimum: r.minimum, indexedAt: r.indexedAt };
+  if (!r.owners.has(id)) {
+    return { ...base, registered: false, ratings: 0,
+      why: `agent ${id} is not registered in the ERC-8004 registry on Monad, as of our index at ${r.indexedAt}` };
+  }
+  const n = r.counts.get(id) ?? 0;
+  return { ...base, registered: true, owner: r.owners.get(id), ratings: n,
+    why: n === 0
+      ? `agent ${id} is registered but has never been rated, so there is nothing to judge`
+      : n < r.minimum
+        ? `agent ${id} has ${n} rating${n === 1 ? "" : "s"}; provenance is computed from ${r.minimum}, so there is nothing to judge yet`
+        // Should not happen: the provenance pass covers every agent at the minimum. Say so rather
+        // than pretend the agent is under it.
+        : `agent ${id} has ${n} ratings but is missing from the provenance pass, which is our fault, not the agent's` };
 }

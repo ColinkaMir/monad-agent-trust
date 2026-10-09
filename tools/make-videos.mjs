@@ -48,12 +48,16 @@ const farm = await fetch(`${SITE}farm.json`).then((r) => r.json());
 const a182 = await fetch(`${API}/agent/182`).then((r) => r.json());
 const a10182 = await fetch(`${API}/agent/10182`).then((r) => r.json());
 const spend = await fetch(`${API}/spend`).then((r) => r.json());
+// Counts that grow every day are captioned as bounds ("over 9,000"), not as exact figures: an exact
+// count recorded on 1 October was already five ratings stale on the 9th, and judging runs to
+// 3 November. The gate checks that each bound still holds. The shares are written from the live
+// value below, so they are not gated here.
+const within = (x, lo, hi) => (x > lo && x < hi ? x : `${x}, outside (${lo}, ${hi})`);
 const expect = [
-  ["registrations", health.totals.registrations, 10275],
-  ["ratings", health.totals.feedbackEvents, 9288],
-  ["rated agents", health.totals.ratedAgents, 93],
-  ["february share", farm.februaryShare, 0.97],
-  ["three-day share", farm.busiestThreeDayShare, 0.8651],
+  ["registrations over 10,000", within(health.totals.registrations, 10000, Infinity), health.totals.registrations],
+  ["ratings over 9,000", within(health.totals.feedbackEvents, 9000, Infinity), health.totals.feedbackEvents],
+  ["rated agents under 100", within(health.totals.ratedAgents, 0, 100), health.totals.ratedAgents],
+  ["february share rounds to 97%", Math.round(farm.februaryShare * 100), 97],
   ["182 raters", a182.raters, 7665],
   ["182 owner funded", a182.ownerFunded, 7665],
   ["median payout", farm.loop.monMedian, 11],
@@ -73,9 +77,8 @@ if (drift.length) {
 const bill = { calls: spend.calls, delivered: spend.delivered, cents: Math.round(spend.usdcSpent * 100) };
 // Shares are written from the live value too. A hand-typed "86.6%" survived three weeks after the
 // data had moved to 86.51%, while the page itself said 86.5% on the same screen.
-const pct = (x) => `${(x * 100).toFixed(1)}%`;
 const febPct = `${Math.round(farm.februaryShare * 100)}%`;
-const threeDayPct = pct(farm.busiestThreeDayShare);
+const threeDayPct = `over ${Math.floor(farm.busiestThreeDayShare * 100)}%`;
 console.log("numbers match the live service; bill now", bill);
 
 // Every caption, in one place, so the narration can be synthesised before anything records.
@@ -87,16 +90,16 @@ const CAP = {
   c5: "The same answer goes to programs, over HTTP and MCP. The page is the shop window.",
   c6: "27 September: 20 wallets rated 12 agents in under six hours, and no money moved. Every payment filter misses that, so the service measures who rates whom.",
   c7: "One address funded 8 of the 9 raters that ever received MON, all on 22 February. Nansen's counterparties show it paying 15 of 16, in five tokens across chains. The owner's own counterparties hold none of them.",
-  c8: "Every rating on Monad, one dot each, coloured by where the money came from. Sixteen of 9,288 are green, and they come from two wallets.",
+  c8: "Every rating on Monad, one dot each, coloured by where the money came from. Sixteen of over 9,000 are green, and they come from two wallets.",
   c9: "Signed in with an email; Dynamic created the wallet. You sign one authorisation per question, worth a cent, valid for a day.",
   c10: "The agent spends them one at a time, straight to the seller. Asking about a wallet buys one Nansen answer with your cent.",
   c11: "Paid one cent from the visitor's own voucher, reconciled on chain. The money never passes through us.",
   c12: "The unused authorisation is revoked from the same wallet: one signature, then a transaction on USDC.",
   c13: "Revoke with cancelAuthorization, a transaction on USDC itself, and the rest die. Nothing depends on us honouring a request.",
   c14: "Sentinel, another Metropolis project, runs this check on its agent registration screen. Merged on 29 September, live in production.",
-  c15: "Where there is no evidence, the answer says so instead of inventing a score. 93 of 10,275 agents have ever been rated.",
+  c15: "Where there is no evidence, the answer says so instead of inventing a score. Fewer than a hundred of over 10,000 agents have ever been rated.",
   c16: "ProofLines. One person, based in Czechia. We measure the Monad network from the outside: validator census, stake geography, latency, all published. Receipts points the same habit at agent reputation.",
-  c17: `Agents are starting to choose each other by on-chain reputation. On Monad that reputation is 9,288 ratings: ${febPct} from one month, ${threeDayPct} from three days.`,
+  c17: `Agents are starting to choose each other by on-chain reputation. On Monad that reputation is over 9,000 ratings: ${febPct} from one month, ${threeDayPct} from three days.`,
   c18: "One question: is this reputation backed by money the owner did not put there. The answer is words, not a score, over HTTP and MCP, so an agent can ask before it trusts a counterparty.",
   c19: `The free half comes from the chain. The half no chain shows is bought from Nansen per call, and the bill is public: ${bill.calls} calls, ${bill.delivered} answers, ${bill.cents} cents, reconciled against the chain, nothing paid for silence.`,
   c20: "Already running inside another Metropolis project. Next: more integrations like Sentinel's. Open source, GPL-3.0, registered as agent 10253 in the registry it measures.",
@@ -222,7 +225,26 @@ async function scene(name, fn) {
   console.log(`  ${name}: ${(end - start).toFixed(1)} s`);
 }
 
+// The ProofLines mark, used on the demo's title card and the pitch's team card.
+const avatar = () => readFileSync(process.env.VIDEO_AVATAR ?? join(PROFILE, "..", "avatar.png")).toString("base64");
+
 const DEMO = async () => {
+  // A silent title card first: who made it and what it is, before the first word. Without it the
+  // narration started on the very first frame, before a viewer had settled.
+  const title = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0b1220;color:#f3f2ec;font-family:Inter,'DejaVu Sans',sans-serif">
+    <div style="display:flex;align-items:center;gap:56px">
+      <img src="data:image/png;base64,${avatar()}" style="width:200px;height:200px;border-radius:18px">
+      <div><div style="font-size:26px;opacity:.65;letter-spacing:2px;text-transform:uppercase">ProofLines presents</div>
+      <div style="font-size:80px;font-weight:700;letter-spacing:-1px;margin-top:6px">Receipts</div>
+      <div style="font-size:32px;opacity:.85;margin-top:12px">Provenance for ERC-8004 reputation on Monad</div></div></div></body></html>`;
+  await scene("d0-title", async (page, begin) => {
+    await page.setContent(title);
+    await page.waitForTimeout(500);
+    begin();
+    await page.waitForTimeout(3500);
+  });
+
   await scene("d1-question", async (page, begin) => {
     await page.goto(SITE, { waitUntil: "networkidle" });
     await page.waitForSelector(".card .verdict");
@@ -320,18 +342,17 @@ const DEMO = async () => {
     await page.waitForSelector(".card .verdict");
     await page.evaluate(() => window.scrollTo(0, 0));
     begin();
-    await askOnSite(page, "99999", () => /fewer than|covered minimum|not exist/i.test(document.body.innerText));
+    await askOnSite(page, "99999", () => /not registered|never been rated|nothing to judge/i.test(document.body.innerText));
     await caption(page, CAP.c15, 8);
     await page.waitForTimeout(1500); // same breath at the end of the demo
   });
 };
 
 const PITCH = async () => {
-  const avatar = readFileSync(process.env.VIDEO_AVATAR ?? join(PROFILE, "..", "avatar.png")).toString("base64");
   const card = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
     background:#0b1220;color:#f3f2ec;font-family:Inter,'DejaVu Sans',sans-serif">
     <div style="display:flex;align-items:center;gap:56px">
-      <img src="data:image/png;base64,${avatar}" style="width:240px;height:240px;border-radius:18px">
+      <img src="data:image/png;base64,${avatar()}" style="width:240px;height:240px;border-radius:18px">
       <div><div style="font-size:72px;font-weight:700;letter-spacing:-1px">ProofLines</div>
       <div style="font-size:30px;opacity:.8;margin-top:10px">one person · Czechia</div>
       <div style="font-size:24px;opacity:.6;margin-top:24px">prooflines.org</div></div></div></body></html>`;
@@ -339,6 +360,7 @@ const PITCH = async () => {
   await scene("p1-team", async (page, begin) => {
     await page.setContent(card);
     begin();
+    await page.waitForTimeout(1000); // a breath on the card before the first word
     await caption(page, CAP.c16, 9);
     await page.goto("https://prooflines.org/monad/", { waitUntil: "networkidle" });
     await caption(page, CAP.c22, 5);

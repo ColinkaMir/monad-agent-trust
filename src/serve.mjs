@@ -18,7 +18,7 @@ import { join } from "node:path";
 import { ethers } from "ethers";
 import * as vouchers from "./vouchers.mjs";
 import { promisify } from "node:util";
-import { verdict, corroboration, counterpartyCheck } from "./verdict.mjs";
+import { verdict, corroboration, counterpartyCheck, uncovered } from "./verdict.mjs";
 
 const run = promisify(execFile);
 const PORT = Number(process.env.PORT ?? 8460);
@@ -212,7 +212,7 @@ createServer(async (req, res) => {
     return json(res, a ? 200 : 404, a
       ? { ...a, ...verdict(a), corroboration: corroboration(e), counterparties: counterpartyCheck(a),
           method: prov.method, indexedAt: prov.indexedAt }
-      : { error: "agent has fewer than the covered minimum of ratings, or does not exist" });
+      : (({ why, ...rest }) => ({ error: why, ...rest }))(uncovered(agentMatch[1])));
   }
 
   const walletMatch = p.match(/^\/wallet\/(0x[0-9a-fA-F]{40})$/);

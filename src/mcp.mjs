@@ -12,7 +12,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import { readFileSync, existsSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { verdict, counterpartyCheck } from "./verdict.mjs";
+import { verdict, counterpartyCheck, uncovered } from "./verdict.mjs";
 
 const run = promisify(execFile);
 const STORE = "data/provenance.json";
@@ -81,13 +81,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   if (name === "agent_trust") {
     const a = data.agents.find((x) => x.agentId === Number(args.agentId));
     if (!a) {
-      return text({
-        agentId: Number(args.agentId),
-        verdict: "not covered",
-        why: `this agent has fewer than ${data.covers?.match(/\d+/)?.[0] ?? 5} ratings, or does not exist. `
-           + `Only ${data.totals?.ratedAgents ?? 0} of ${data.totals?.registrations ?? 0} registered `
-           + `agents have ever been rated at all.`,
-      });
+      const u = uncovered(args.agentId);
+      return text({ ...u, why: `${u.why}. Only ${data.totals?.ratedAgents ?? 0} of `
+        + `${data.totals?.registrations ?? 0} registered agents have ever been rated at all.` });
     }
     const e = bought()[String(args.agentId)];
     return text({
