@@ -36,6 +36,14 @@ else
     echo "farm.json без изменений"
 fi
 
+# The registration card the registry points at (agent 10253's agentURI) is served from the site,
+# not from GitHub, so a card edited in the repository reaches the registry only through this copy.
+CARD_DST=/var/www/proofline-public/monad/agent-trust/agent-registration.json
+if ! cmp -s agent-registration.json "$CARD_DST"; then
+    sudo -n install -o www-data -g www-data -m 644 agent-registration.json "$CARD_DST"
+    echo "agent-registration.json обновлён на сайте"
+fi
+
 sudo -n systemctl restart monad-agent-trust
 
 # Fail loudly if the restart did not produce a service that answers, otherwise a broken refresh
