@@ -21,6 +21,8 @@ and what to do with the answer in [Integrating it](#integrating-it).
 Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · registered as agent
 **10253** in the registry it measures
 
+Videos: [demo, 2:45](https://youtu.be/j-qudDFWUgo) · [pitch, 1:26](https://youtu.be/DbUx0Bzj2sM)
+
 The registry counts ratings. On Monad that count is self-produced:
 
 - **over 10,000** agents registered (the count grows daily; `/api/health` has today's), **94** ever rated
@@ -167,8 +169,8 @@ Nansen account for the half that is not on Monad; calling this costs one request
 over both registries: it recovered the rating **value** our first pass discarded, and an exact
 distinct-rater count. `src/index-erc8004.mjs` uses HyperSync directly for the part an event indexer
 does not model, the owners' transfer history: one owner here has 15,411 transactions and explorer
-pagination caps at 1,000 rows a page. Full history in 46s, catch-up in **0.18s**, on the free
-tier's 30 requests a minute. The two pipelines are independent and agree on every covered agent,
+pagination caps at 1,000 rows a page. Full history in about two minutes (46s on 17 September; the
+registry has grown since), catch-up in **0.18s**, on the free tier's 30 requests a minute. The two pipelines are independent and agree on every covered agent,
 which is the only reason to trust either.
 
 **Nansen.** Not a panel of their data; an input to a verdict. `/profiler/address/related-wallets`
