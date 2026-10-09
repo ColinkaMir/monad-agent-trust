@@ -143,7 +143,13 @@ export function ownerSent(agentId) {
 export function verdict(a) {
   const v = baseVerdict(a);
   const o = a && ownerSent(a.agentId);
-  return o ? { ...v, why: v.why + o.sentence, ownerSentRatings: o.field } : v;
+  const p = a && puppetOf(a.agentId);
+  return {
+    ...v,
+    ...(o && { ownerSentRatings: o.field }),
+    ...(p && { ownerFundedToRate: p.field }),
+    why: v.why + (o ? o.sentence : "") + (p ? p.sentence : ""),
+  };
 }
 
 function baseVerdict(a) {
@@ -223,7 +229,7 @@ function baseVerdict(a) {
 
 // The registry as indexed, reduced to what an uncovered answer needs. Read once per index refresh
 // (the file is a few megabytes, and the API serves many questions between refreshes).
-let registryCache = { mtimeMs: -1, owners: new Map(), counts: new Map(), indexedAt: null, minimum: 5 };
+let registryCache = { mtimeMs: -1, owners: new Map(), counts: new Map(), puppets: new Map(), indexedAt: null, minimum: 5 };
 function registry() {
   if (!existsSync("data/indexed.json")) return registryCache;
   const mtimeMs = statSync("data/indexed.json").mtimeMs;
@@ -232,14 +238,56 @@ function registry() {
   const owners = new Map(d.registrations.map((r) => [r.agentId, r.owner]));
   const counts = new Map();
   for (const f of d.feedback) counts.set(f.agentId, (counts.get(f.agentId) ?? 0) + 1);
-  registryCache = { mtimeMs, owners, counts, indexedAt: d.indexedAt, minimum: d.minFeedback ?? 5 };
+  // Agents owned by a wallet that another agent's owner funded to rate it. Agent 182's owner funded
+  // 7,665 wallets to rate 182, and every one of them also registered an agent of its own, so most
+  // of the registry is that one farm's raters. Only counted where an owner funded at least five
+  // raters, so a single gift between two people does not turn into a farm.
+  const fundedBy = new Map(); // owner -> Set(wallet)
+  for (const [k] of d.funded ?? []) {
+    const [o, w] = k.split("|");
+    (fundedBy.get(o) ?? fundedBy.set(o, new Set()).get(o)).add(w);
+  }
+  const ownedBy = new Map(); // wallet -> [agentId]
+  for (const r of d.registrations) {
+    const o = r.owner.toLowerCase();
+    (ownedBy.get(o) ?? ownedBy.set(o, []).get(o)).push(r.agentId);
+  }
+  const ratersOf = new Map();
+  for (const f of d.feedback) (ratersOf.get(f.agentId) ?? ratersOf.set(f.agentId, new Set()).get(f.agentId)).add(f.client.toLowerCase());
+  const puppets = new Map(); // agentId -> { farm, fundedRaters }
+  for (const [farm, raters] of ratersOf) {
+    const fo = owners.get(farm)?.toLowerCase();
+    const funded = fo && fundedBy.get(fo);
+    if (!funded) continue;
+    const mine = [...raters].filter((r) => funded.has(r));
+    if (mine.length < 5) continue;
+    for (const r of mine) for (const id of ownedBy.get(r) ?? []) if (id !== farm) puppets.set(id, { farm, fundedRaters: mine.length });
+  }
+  registryCache = { mtimeMs, owners, counts, puppets, indexedAt: d.indexedAt, minimum: d.minFeedback ?? 5 };
   return registryCache;
+}
+
+/// When this agent's owner is one of the wallets another agent's owner funded to rate it.
+export function puppetOf(agentId) {
+  const p = registry().puppets.get(Number(agentId));
+  if (!p) return null;
+  return {
+    field: { farmAgent: p.farm, fundedRaters: p.fundedRaters },
+    sentence: ` Its owner is one of the ${p.fundedRaters.toLocaleString("en-US")} wallets the owner of agent ${p.farm} funded `
+      + `and that then rated agent ${p.farm}.`,
+  };
 }
 
 /// Why there is no verdict for an agent that provenance does not cover, said precisely. "Fewer
 /// than the minimum, or does not exist" lumped three different facts together, and one of them
 /// (registered, never rated) is the honest state of most agents, including our own.
 export function uncovered(agentId) {
+  const u = uncoveredBase(agentId);
+  const p = u.registered && puppetOf(agentId);
+  return p ? { ...u, why: u.why.replace(/\.?$/, ".") + p.sentence, ownerFundedToRate: p.field } : u;
+}
+
+function uncoveredBase(agentId) {
   const r = registry();
   const id = Number(agentId);
   const base = { agentId: id, verdict: "not covered", minimum: r.minimum, indexedAt: r.indexedAt };

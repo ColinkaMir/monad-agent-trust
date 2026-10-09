@@ -25,10 +25,14 @@ Videos: [demo, 2:45](https://youtu.be/j-qudDFWUgo) · [pitch, 1:26](https://yout
 
 The registry counts ratings. On Monad that count is self-produced:
 
-- **over 10,000** agents registered (the count grows daily; `/api/health` has today's), **94** ever rated
+- **over 10,000** agents registered (the count grows daily; `/api/health` has today's), about one in a
+  hundred ever rated
 - **9,296** ratings in total, **96.9% of them from February 2026**, and **86.4% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
+- Every one of those 7,665 wallets also registered an agent of its own, so **about three in four
+  registered agents are owned by wallets one owner funded to rate agent 182**. Ten ratings on them
+  came from the owner of agent 10182, one of the agents in the 27 September ring
 - Ratings that survive both provenance filters, across the whole chain: **16 of 9,296**. They come
   from **2 wallets**, and one of those two produced 15 of the 16 by rating the same two agents over
   and over. Buying the funding history of both leaves **one wallet** that nothing is known against
@@ -198,6 +202,11 @@ looks independent, and the answer came back split:
 |---|---|---|---|
 | `0x794c94f1` | agent 4 | `0xdf747918` | Nansen labels it **🤖 Distributor**, a wallet whose business is funding many wallets. Independent of *this* owner, not independent of everyone |
 | `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it |
+
+A payment counts if it reached the agent's owner before the rating, even when it arrived before
+the agent itself was registered: on agents 145 and 146, 0.1 MON reached the owner two minutes before
+registration and the ratings followed eleven minutes later. Requiring the payment after
+registration would leave one paid rating instead of 16.
 
 So the free filters leave 16 ratings out of 9,296, produced by 2 wallets across 3 agents, and
 after the purchase exactly one of those wallets has a provenance with nothing against it. The
