@@ -97,5 +97,33 @@ for (const a of ringAgents) {
   );
 }
 
+// How many distinct addresses each named funder has ever sent MON to. A shared funder means a
+// farm only when the funder is an ordinary wallet; an exchange or a distributor funds everybody,
+// and "funded by the same address" then means nothing. Nansen's label answers this for money, but
+// the count is free from the chain and catches the obvious case before anything is bought.
+const funders = [...new Set(Object.values(out.agents).map((a) => a.topFunder).filter(Boolean))];
+if (funders.length) {
+  // Streamed to the end rather than one `get`, which returns a page and would undercount a busy
+  // funder silently: the busy funder is exactly the case this count exists to recognise.
+  const fanOut = new Map(funders.map((x) => [x, new Set()]));
+  const stream = await client.stream({
+    fromBlock: 0,
+    transactions: [{ from: funders }],
+    fieldSelection: { transaction: [TransactionField.From, TransactionField.To, TransactionField.Value] },
+  }, {});
+  for (;;) {
+    const res = await stream.recv();
+    if (res === null) break;
+    for (const tx of res.data.transactions ?? []) {
+      if (BigInt(tx.value ?? "0") === 0n || !tx.to) continue;
+      fanOut.get((tx.from ?? "").toLowerCase())?.add(tx.to.toLowerCase());
+    }
+  }
+  for (const a of Object.values(out.agents)) {
+    if (a.topFunder) a.topFunderRecipients = fanOut.get(a.topFunder)?.size ?? 0;
+  }
+  console.log(`  получателей MON у спонсоров: ${funders.map((x) => `${x.slice(0, 10)}… ${fanOut.get(x).size}`).join(", ")}`);
+}
+
 writeFileSync("data/ring-funders.json", JSON.stringify(out, null, 1));
 console.log(`-> data/ring-funders.json (скан ${seconds} с)`);

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test test/",
+    "check:numbers": "node tools/check-published-numbers.mjs",
+    "check:site": "node tools/audit-site.mjs"
   },
   "keywords": [],
   "author": "",

@@ -140,8 +140,27 @@ export function ownerSent(agentId) {
 
 /// Plain-language reading of the numbers. Deliberately blunt: the point of the project is that
 /// a count of ratings means nothing here, so the verdict says why rather than scoring 0-100.
+// A stable code for programs, next to the words for people, and what evidence would move the
+// verdict: an answer that cannot say what would change it is a score in disguise.
+const CODES = {
+  farmed: "FARMED", "single-source": "SINGLE_SOURCE", "partly-backed": "PARTLY_BACKED",
+  ring: "RING", burst: "BURST", thin: "THIN", unknown: "UNKNOWN",
+};
+const WOULD_CHANGE = {
+  farmed: "a rating from a wallet that paid this agent before rating it and was never funded by its owner",
+  "single-source": "ratings from a second, unrelated wallet, ideally one that paid before rating",
+  "partly-backed": "evidence that the paying raters were funded by the owner after all, for instance off Monad, which would make them owner-funded",
+  ring: "raters who are not shared with the other agents, or a rater who paid this agent before rating it",
+  burst: "ratings spread over time from wallets that paid before rating",
+  thin: "a rater who paid this agent before rating it and was never funded by its owner",
+  unknown: "any rating",
+};
+
 export function verdict(a) {
-  const v = baseVerdict(a);
+  const v = { ...baseVerdict(a) };
+  v.code = CODES[v.verdict] ?? v.verdict.toUpperCase();
+  v.wouldChange = WOULD_CHANGE[v.verdict] ?? null;
+  v.readAtBlock = registry().head ?? null;
   const o = a && ownerSent(a.agentId);
   const p = a && puppetOf(a.agentId);
   return {
@@ -198,7 +217,15 @@ function baseVerdict(a) {
       why += ` ${f.topFunderWallets} of the ${f.fundedOnMonad} that ever received MON were funded `
            + `by one address, ${f.topFunder.slice(0, 10)}…, ${when}, which is months before they `
            + `rated anything. That address owns none of these agents, so the owner-funding check `
-           + `never sees it.`;
+           + `never sees it.`
+           // Free from the chain: whether the shared funder is a person's wallet or an exchange.
+           // Only an ordinary wallet makes a shared funder mean something.
+           + (f.topFunderRecipients == null ? ""
+             : f.topFunderRecipients < 1000
+               ? ` In its whole history it has sent MON to only ${f.topFunderRecipients} addresses, `
+                 + `so it is an ordinary wallet, not an exchange.`
+               : ` It has sent MON to ${f.topFunderRecipients.toLocaleString("en-US")} addresses, `
+                 + `the shape of an exchange or a distributor, so a shared funder is weak evidence here.`);
     }
     // Third leg, bought: the funder's own counterparties show what MON alone cannot, that the
     // same wallet paid these raters on other chains too, and the owner's show whether the money
@@ -229,7 +256,7 @@ function baseVerdict(a) {
 
 // The registry as indexed, reduced to what an uncovered answer needs. Read once per index refresh
 // (the file is a few megabytes, and the API serves many questions between refreshes).
-let registryCache = { mtimeMs: -1, owners: new Map(), counts: new Map(), puppets: new Map(), indexedAt: null, minimum: 5 };
+let registryCache = { mtimeMs: -1, owners: new Map(), counts: new Map(), puppets: new Map(), indexedAt: null, head: null, minimum: 5 };
 function registry() {
   if (!existsSync("data/indexed.json")) return registryCache;
   const mtimeMs = statSync("data/indexed.json").mtimeMs;
@@ -263,7 +290,7 @@ function registry() {
     if (mine.length < 5) continue;
     for (const r of mine) for (const id of ownedBy.get(r) ?? []) if (id !== farm) puppets.set(id, { farm, fundedRaters: mine.length });
   }
-  registryCache = { mtimeMs, owners, counts, puppets, indexedAt: d.indexedAt, minimum: d.minFeedback ?? 5 };
+  registryCache = { mtimeMs, owners, counts, puppets, indexedAt: d.indexedAt, head: d.head ?? null, minimum: d.minFeedback ?? 5 };
   return registryCache;
 }
 
@@ -283,6 +310,11 @@ export function puppetOf(agentId) {
 /// (registered, never rated) is the honest state of most agents, including our own.
 export function uncovered(agentId) {
   const u = uncoveredBase(agentId);
+  const r = registry();
+  u.code = !u.registered ? "NOT_REGISTERED" : u.ratings === 0 ? "NO_RATINGS" : "TOO_FEW_RATINGS";
+  u.wouldChange = !u.registered ? "registration in the ERC-8004 identity registry"
+    : `${r.minimum - u.ratings} more rating${r.minimum - u.ratings === 1 ? "" : "s"}, after which provenance is computed`;
+  u.readAtBlock = r.head;
   const p = u.registered && puppetOf(agentId);
   return p ? { ...u, why: u.why.replace(/\.?$/, ".") + p.sentence, ownerFundedToRate: p.field } : u;
 }

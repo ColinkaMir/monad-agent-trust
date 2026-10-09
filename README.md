@@ -18,6 +18,20 @@ Free to read, no key, no account. The one input that cannot be free is bought pe
 the bill is published with the answer. Full reference in [API](#api) and [MCP](#mcp-in-three-lines),
 and what to do with the answer in [Integrating it](#integrating-it).
 
+What it does that the registry, and a funding trace on its own, cannot:
+
+- **Buys what Monad cannot show.** Nansen's first-funder and counterparty data, per call over x402,
+  every payment published and reconciled against USDC transfer logs.
+- **Lets the caller pay for their own question.** Email sign-in through Dynamic, then one-cent
+  EIP-3009 authorisations that the caller can revoke on chain.
+- **Answers programs, not only people.** HTTP, and MCP at a URL; another team's app (Sentinel) already
+  calls it on its agent registration screen.
+- **Goes past the obvious farm.** After both filters, 16 ratings from 2 wallets survive network-wide;
+  150 ratings were sent by the rated agent's own owner through the rater's account; about three in
+  four registered agents are one farm's raters.
+- **Says what would change each verdict**, with a stable `code` and the block it was read at, and
+  `npm test` pins the rules.
+
 Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · registered as agent
 **10253** in the registry it measures
 
@@ -110,6 +124,13 @@ seven agents is not a ring and calling it one would be the same overreach this p
 Base URL `https://prooflines.org/monad/agent-trust/api`, or `http://127.0.0.1:8460` when self-hosted.
 Everything is JSON, everything is `GET` unless marked, and nothing needs a key.
 
+Every agent answer carries `verdict` (words) and `code` (`FARMED`, `SINGLE_SOURCE`, `PARTLY_BACKED`,
+`RING`, `BURST`, `THIN`, or for uncovered agents `NOT_REGISTERED`, `NO_RATINGS`, `TOO_FEW_RATINGS`),
+`why`, `wouldChange` (the evidence that would move the verdict) and `readAtBlock`. Where they apply:
+`ownerSentRatings` (ratings the owner wrote through the rater's account, with an example
+transaction) and `ownerFundedToRate` (this agent's owner is one of the wallets another agent's owner
+funded to rate it).
+
 | Route | Answers | Costs |
 |---|---|---|
 | `/health` | what the service is, when it last indexed, totals for the whole network | free |
@@ -158,6 +179,17 @@ free, `wallet_trust` buys a Nansen signal for $0.01 and only when the caller pas
 Nothing spends money unless it was asked to. The hosted endpoint never buys at all: it would be
 spending the service's own key on a stranger's behalf, so there `buy: true` answers with how to pay
 for the question from your own wallet instead. Your own copy over stdio buys with your own key.
+
+## Tests
+
+```bash
+npm install && npm test        # verdict rules on hand-built agents, and the hosted MCP endpoint
+npm run check:numbers          # every figure quoted in README and the registration card vs the live API
+npm run check:site             # the live page in a real browser
+```
+
+The MCP test starts the server without a key, so even a broken purchase guard cannot spend money
+in a test run.
 
 ## Integrating it
 
