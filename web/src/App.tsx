@@ -70,6 +70,9 @@ type Verdict = {
   last: string;
   verdict: string;
   why: string;
+  code?: string;
+  wouldChange?: string;
+  readAtBlock?: number;
 };
 
 type Spend = {
@@ -98,9 +101,11 @@ function Answer() {
   const [wallet, setWallet] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // An uncovered agent comes back as an error with a code and what would change it; keep both.
+  const [errorMeta, setErrorMeta] = useState<{ code?: string; wouldChange?: string } | null>(null);
 
   const ask = async (q: string) => {
-    setBusy(true); setError(""); setAgent(null); setWallet(null);
+    setBusy(true); setError(""); setErrorMeta(null); setAgent(null); setWallet(null);
     try {
       const isAddress = /^0x[0-9a-fA-F]{40}$/.test(q.trim());
       // Say who is paying. Without this a visitor could sign authorizations all day and never
@@ -109,7 +114,10 @@ function Answer() {
       const payer = isAddress && primaryWallet?.address ? `?payer=${primaryWallet.address}` : "";
       const r = await fetch(`${API}/${isAddress ? "wallet" : "agent"}/${q.trim()}${payer}`);
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error ?? `HTTP ${r.status}`);
+      if (!r.ok) {
+        if (d.code) setErrorMeta({ code: d.code, wouldChange: d.wouldChange });
+        throw new Error(d.error ?? `HTTP ${r.status}`);
+      }
       isAddress ? setWallet(d) : setAgent(d);
       // A paid answer may have spent one of the visitor's vouchers; the delegation panel only
       // refetched on sign-in, so it kept showing the voucher as ready until a reload.
@@ -146,13 +154,24 @@ function Answer() {
           : " Sign in and delegate a question to buy the paid half."}
       </p>
 
-      {error && <div className="card bad"><b>could not answer</b><p>{error}</p></div>}
+      {error && (
+        <div className="card bad">
+          <b>could not answer</b><p>{error}</p>
+          {errorMeta?.wouldChange && (
+            <p className="would-change"><b>what would change this</b> {errorMeta.wouldChange}</p>
+          )}
+          {errorMeta?.code && <p className="code-line">{errorMeta.code}</p>}
+        </div>
+      )}
 
       {agent && (
         <div className={`card ${TONE[agent.verdict] ?? "warn"}`}>
           <div className="verdict">{agent.verdict}</div>
           <h2>agent #{agent.agentId}</h2>
           <p className="why">{agent.why}</p>
+          {agent.wouldChange && (
+            <p className="would-change"><b>what would change this</b> {agent.wouldChange}</p>
+          )}
           {agent.corroboration?.bought && (
             <div className="bought-line">
               <b>bought to check our own answer</b>
@@ -181,6 +200,11 @@ function Answer() {
               <tr><td>window</td><td colSpan={2}>{agent.first} … {agent.last}</td></tr>
             </tbody>
           </table>
+          {agent.code && (
+            <p className="code-line">
+              {agent.code}{agent.readAtBlock ? ` · read at block ${agent.readAtBlock.toLocaleString("en-US")}` : ""}
+            </p>
+          )}
         </div>
       )}
 
