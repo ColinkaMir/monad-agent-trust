@@ -15,11 +15,11 @@
  * the operator's notes). Numbers in them are checked against the live API before anything records,
  * so a figure that moved overnight stops the run instead of shipping in a video.
  *
- *   VIDEO_PROFILE=/path/to/profile node tools/make-videos.mjs [demo|pitch|all]
+ *   VIDEO_PROFILE=/path/to/profile node tools/make-videos.mjs [demo|pitch|all|envio]
  */
 import { chromium } from "/home/solana/discord-reader/node_modules/playwright/index.mjs";
 import { mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync, renameSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { join, resolve } from "node:path";
 
 const SITE = "https://prooflines.org/monad/agent-trust/";
@@ -106,6 +106,13 @@ const CAP = {
   c22: "Everything we have built for Monad is public at prooflines.org: live pages, machine-readable feeds and open-source code.",
   c23: "The same answer comes back as JSON, so any agent or app can ask before it trusts a counterparty.",
   c24: "Try it live at prooflines.org. The code is on GitHub: ColinkaMir/monad-agent-trust.",
+  // Envio sponsor clip.
+  c25: "Every verdict starts from one HyperSync stream: every Registered and NewFeedback event from both ERC-8004 registries on Monad mainnet.",
+  c26: "The store remembers the last block it covered, so a refresh asks only for what happened since. This run is live.",
+  c27: "Then the part no event indexer models: the transfers of every rated agent's owner. One owner has 15,411 transactions, more than an explorer's pages return.",
+  c28: "Those funding edges are what the verdict counts. On agent 182, all 7,665 raters were funded by its own owner.",
+  c29: "HyperIndex runs a second, typed pipeline over the same registries, as a cross-check on the first.",
+  c30: "A full history in about two minutes, a catch-up in a fraction of a second, on the free tier.",
 };
 
 // ---------------------------------------------------------------- narration
@@ -422,6 +429,109 @@ const PITCH = async () => {
   });
 };
 
+// A terminal drawn in the page, so the Envio clip shows real commands and their real output at the
+// same size and in the same captions as everything else.
+const TERM = `<!doctype html><html><body style="margin:0;height:100vh;background:#0b1220;color:#d6dae3;
+  font:500 21px/1.5 'DejaVu Sans Mono',monospace">
+  <div style="margin:56px auto;width:1280px;border:1px solid #263247;border-radius:12px;background:#0f1729">
+    <div style="padding:10px 16px;border-bottom:1px solid #263247;color:#7b8aa5;font-size:16px">
+      metropolis-agent-trust</div>
+    <pre id="t" style="margin:0;padding:18px 22px;white-space:pre-wrap;min-height:560px"></pre></div></body></html>`;
+const esc = (x) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const termLine = (page, html) => page.evaluate((h) => { document.getElementById("t").innerHTML += h + "\n"; }, html);
+async function termType(page, cmd) {
+  await termLine(page, '<span style="color:#7ee0a1">$</span> <span id="cmd"></span>');
+  for (const ch of cmd) {
+    await page.evaluate((c) => { const el = [...document.querySelectorAll("#cmd")].pop(); el.textContent += c; }, ch);
+    await page.waitForTimeout(55);
+  }
+  await page.evaluate(() => [...document.querySelectorAll("#cmd")].pop().removeAttribute("id"));
+  await page.waitForTimeout(400);
+}
+/// Runs a command for real and prints its output as it arrives. Returns the wall time.
+function termRun(page, cmd, args) {
+  return new Promise((resolveRun, reject) => {
+    const t0 = Date.now();
+    const child = spawn(cmd, args, { cwd: process.cwd() });
+    let buf = "";
+    const pending = [];
+    const flush = (chunk) => {
+      buf += chunk;
+      const lines = buf.split("\n"); buf = lines.pop();
+      for (const l of lines) pending.push(termLine(page, esc(l)));
+    };
+    child.stdout.on("data", flush);
+    child.stderr.on("data", flush);
+    child.on("close", async (code) => {
+      if (buf) pending.push(termLine(page, esc(buf)));
+      await Promise.all(pending);
+      code === 0 ? resolveRun((Date.now() - t0) / 1000) : reject(new Error(`${cmd} exited ${code}`));
+    });
+  });
+}
+
+const ENVIO = async () => {
+  const title = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0b1220;color:#f3f2ec;font-family:Inter,'DejaVu Sans',sans-serif">
+    <div style="display:flex;align-items:center;gap:56px">
+      <img src="data:image/png;base64,${avatar()}" style="width:200px;height:200px;border-radius:18px">
+      <div><div style="font-size:26px;opacity:.65;letter-spacing:2px;text-transform:uppercase">ProofLines presents</div>
+      <div style="font-size:80px;font-weight:700;letter-spacing:-1px;margin-top:6px">Receipts × Envio</div>
+      <div style="font-size:32px;opacity:.85;margin-top:12px">Every verdict starts from a HyperSync query</div></div></div></body></html>`;
+  await scene("e0-title", async (page, begin) => {
+    await page.setContent(title);
+    await page.waitForTimeout(500);
+    begin();
+    await page.waitForTimeout(3500);
+  });
+
+  // The query as it is in the source, read from the file rather than retyped.
+  const src = readFileSync("src/index-erc8004.mjs", "utf8").split("\n");
+  const from = src.findIndex((l) => l.includes("const stream = await client.stream({"));
+  const query = src.slice(from, from + 8).join("\n");
+  await scene("e1-query", async (page, begin) => {
+    await page.setContent(TERM);
+    begin();
+    await termType(page, "grep -A7 'client.stream' src/index-erc8004.mjs | head -8");
+    await termLine(page, esc(query));
+    await caption(page, CAP.c25, 9);
+  });
+
+  await scene("e2-catchup", async (page, begin) => {
+    await page.setContent(TERM);
+    begin();
+    await caption(page, CAP.c26, 6, { block: false });
+    await termType(page, "node src/index-erc8004.mjs");
+    const wall = await termRun(page, "node", ["src/index-erc8004.mjs"]);
+    // The caption that follows says "a fraction of a second". A slow network day would make the
+    // screen contradict it, so a slow run stops the recording instead of shipping.
+    if (wall > 5) throw new Error(`catch-up took ${wall}s on camera; rerun when HyperSync is quick`);
+    await termLine(page, `<span style="color:#7b8aa5">(${wall.toFixed(2)} s wall time, including node start-up)</span>`);
+    await caption(page, CAP.c27, 10);
+  });
+
+  await scene("e3-site", async (page, begin) => {
+    await page.goto(SITE, { waitUntil: "networkidle" });
+    await page.waitForSelector(".card .verdict");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    begin();
+    await askOnSite(page, "182", () => /farmed/.test(document.querySelector(".card .verdict")?.textContent ?? ""));
+    await scrollTo(page, ".card");
+    await caption(page, CAP.c28, 7);
+  });
+
+  const schema = readFileSync("indexer/schema.graphql", "utf8").split("\n").slice(0, 18).join("\n");
+  await scene("e4-hyperindex", async (page, begin) => {
+    await page.setContent(TERM);
+    begin();
+    await termType(page, "head -18 indexer/schema.graphql");
+    await termLine(page, esc(schema));
+    await caption(page, CAP.c29, 7);
+    await caption(page, CAP.c30, 7);
+    await page.waitForTimeout(1200);
+  });
+};
+
 // ---------------------------------------------------------------- assembly
 function assemble(prefix, outName) {
   const parts = clips.filter((c) => c.name.startsWith(prefix));
@@ -475,6 +585,11 @@ function assemble(prefix, outName) {
 }
 
 mkdirSync(OUT, { recursive: true });
+if (which === "envio") {
+  console.log("recording the Envio clip");
+  await ENVIO();
+  if (assemble("e", "receipts-envio.mp4") > 120) throw new Error("the Envio clip is over the 2 minute limit");
+}
 if (which === "demo" || which === "all") {
   console.log("recording demo");
   await DEMO();
