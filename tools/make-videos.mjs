@@ -56,7 +56,10 @@ const within = (x, lo, hi) => (x > lo && x < hi ? x : `${x}, outside (${lo}, ${h
 const expect = [
   ["registrations over 10,000", within(health.totals.registrations, 10000, Infinity), health.totals.registrations],
   ["ratings over 9,000", within(health.totals.feedbackEvents, 9000, Infinity), health.totals.feedbackEvents],
-  ["rated agents under 100", within(health.totals.ratedAgents, 0, 100), health.totals.ratedAgents],
+  // "about one in a hundred": the share of registered agents ever rated, which stayed near 1% while
+  // the count itself crossed 100 during judging and broke the earlier "fewer than a hundred".
+  ["rated share about 1%", within(health.totals.ratedAgents / health.totals.registrations, 0.005, 0.015),
+    health.totals.ratedAgents / health.totals.registrations],
   ["february share rounds to 97%", Math.round(farm.februaryShare * 100), 97],
   ["182 raters", a182.raters, 7665],
   ["182 owner funded", a182.ownerFunded, 7665],
@@ -97,7 +100,7 @@ const CAP = {
   c12: "The unused authorisation is revoked from the same wallet: one signature, then a transaction on USDC.",
   c13: "Revoke with cancelAuthorization, a transaction on USDC itself, and the rest die. Nothing depends on us honouring a request.",
   c14: "Sentinel, another Metropolis project, runs this check on its agent registration screen. Merged on 29 September, live in production.",
-  c15: "Where there is no evidence, the answer says so instead of inventing a score. Fewer than a hundred of over 10,000 agents have ever been rated.",
+  c15: "Where there is no evidence, the answer says so instead of inventing a score. About one in a hundred of over 10,000 agents has ever been rated.",
   c16: "ProofLines. One person, based in Czechia. We measure the Monad network from the outside: validator census, stake geography, latency, all published. Receipts points the same habit at agent reputation.",
   c17: `Agents are starting to choose each other by on-chain reputation. On Monad that reputation is over 9,000 ratings: ${febPct} from one month, ${threeDayPct} from three days.`,
   c18: "One question: is this reputation backed by money the owner did not put there. The answer is words, not a score, over HTTP and MCP, so an agent can ask before it trusts a counterparty.",
