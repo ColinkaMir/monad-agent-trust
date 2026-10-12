@@ -19,7 +19,7 @@ const BASE = process.env.DEMO_BASE ?? "https://prooflines.org/monad/agent-trust"
 const FILES = {
   // Registrations grow every day while judging runs to 3 November, so the README says "over
   // 10,000" and points at /api/health instead of carrying a count that is stale by morning.
-  "README.md": ["ratings", "rated agents", "independent ratings", "february share", "three-day share"],
+  "README.md": ["ratings", "independent ratings", "february share", "three-day share"],
   "agent-registration.json": ["ratings", "february share", "three-day share"],
 };
 
@@ -60,6 +60,17 @@ const CHECKS = [
 // "10,253 to 10,254" sentence are history, not drift, so they are excluded by name.
 const SUSPECTS = /\b(9,188|9188|1,206|10,24[0-9])\b/g;
 
+// Bounds rather than exact counts. Judging runs three weeks and the counts move daily, so the
+// published text says "over 9,300" and "about 97%"; what this checks is that each bound is still
+// TRUE against the live API, which is the failure that matters to a reader.
+const BOUNDS = [
+  [/over (\d{1,3}(?:,\d{3})+)(?:\*\*)? ratings/g, (m) => live.ratings > Number(m[1].replace(/,/g, "")), "ratings"],
+  [/16 of over (\d{1,3}(?:,\d{3})+)/g, (m) => live.independent === 16 && live.ratings > Number(m[1].replace(/,/g, "")), "16 of over"],
+  [/about (\d{2})% of them from February/g, (m) => Math.abs(live.februaryShare * 100 - Number(m[1])) <= 0.5, "february share"],
+  [/about (\d{2})% on three days/g, (m) => Math.abs(live.threeDayShare * 100 - Number(m[1])) <= 0.5, "three-day share"],
+  [/about one in a hundred/g, () => Math.abs(live.ratedAgents / live.registrations - 0.01) <= 0.005, "rated share"],
+];
+
 let bad = 0;
 for (const [file, expected] of Object.entries(FILES)) {
   let text;
@@ -68,7 +79,15 @@ for (const [file, expected] of Object.entries(FILES)) {
   } catch {
     continue;
   }
+  const bounded = new Set();
+  for (const [re, holds, label] of BOUNDS) {
+    for (const m of text.matchAll(re)) {
+      bounded.add(label);
+      if (!holds(m)) { console.log(`🔴 ${file}: "${m[0]}" no longer holds against the live API`); bad++; }
+    }
+  }
   for (const [label, value, forms] of CHECKS) {
+    if (bounded.has(label)) continue; // quoted as a bound, checked above
     const mentioned = forms.some((f) => text.includes(f));
     // Only complain when the file talks about this figure at all: the registration card does not
     // quote every number, and demanding it would train everyone to ignore this tool.

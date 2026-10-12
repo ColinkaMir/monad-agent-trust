@@ -43,13 +43,13 @@ The registry counts ratings. On Monad that count is self-produced:
 
 - **over 10,000** agents registered (the count grows daily; `/api/health` has today's), about one in a
   hundred ever rated
-- **9,300** ratings in total, **96.9% of them from February 2026**, and **86.4% on three days of it**
+- **over 9,300** ratings in total, **about 97% of them from February 2026**, and **about 86% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
 - Every one of those 7,665 wallets also registered an agent of its own, so **about three in four
   registered agents are owned by wallets one owner funded to rate agent 182**. Ten ratings on them
   came from the owner of agent 10182, one of the agents in the 27 September ring
-- Ratings that survive both provenance filters, across the whole chain: **16 of 9,300**. They come
+- Ratings that survive both provenance filters, across the whole chain: **16 of over 9,300**. They come
   from **2 wallets**, and one of those two produced 15 of the 16 by rating the same two agents over
   and over. Buying the funding history of both leaves **one wallet** that nothing is known against
 
@@ -84,7 +84,7 @@ wallet that was paid to hold an opinion.
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
 | **Buy** | What Monad cannot show: who funded a rater *first, anywhere*, and whom an owner or a ring's funder paid on *any* chain. Bought from Nansen over x402, on Monad: $0.01 and $0.05 a call |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
-| **Show** | All 9,300 ratings drawn one dot each, because the claim is a ratio of 16 to 9,300 and a table reads that as "some good, some bad" |
+| **Show** | Every rating drawn one dot each, because the claim is a ratio of 16 to over 9,300 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
 with the sentence that justifies it. `not covered` is a real answer: about one in a hundred of more than
@@ -257,7 +257,7 @@ the agent itself was registered: on agents 145 and 146, 0.1 MON reached the owne
 registration and the ratings followed eleven minutes later. Requiring the payment after
 registration would leave one paid rating instead of 16.
 
-So the free filters leave 16 ratings out of 9,300, produced by 2 wallets across 3 agents, and
+So the free filters leave 16 ratings out of over 9,300, produced by 2 wallets across 3 agents, and
 after the purchase exactly one of those wallets has a provenance with nothing against it. The
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
@@ -391,7 +391,7 @@ directions of ours died on that same check before a line of code was written, wh
 check is for.
 
 Limits: provenance is computed for agents with at least five ratings (33 agents,
-9210 of 9,300 events); purchased corroboration is sampled, not exhaustive, because each lookup
+9,210 of over 9,300 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
 so even the one wallet left standing is an upper bound rather than a floor. That upper bound has
 already moved once: it was three before we bought the funding history, and buying it is what
