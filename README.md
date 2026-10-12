@@ -37,7 +37,9 @@ What it does that the registry, and a funding trace on its own, cannot:
 Live: **https://prooflines.org/monad/agent-trust/** · API under `/api` · registered as agent
 **10253** in the registry it measures
 
-Videos: [demo, 2:45](https://youtu.be/j-qudDFWUgo) · [pitch, 1:26](https://youtu.be/DbUx0Bzj2sM)
+Videos: [demo, 2:45](https://youtu.be/j-qudDFWUgo) · [pitch, 1:26](https://youtu.be/DbUx0Bzj2sM).
+Recorded on 9 October against the live service; the network has grown since (the demo's "fewer
+than a hundred" rated agents passed 100 on 12 October), and `/api/health` has today's figures.
 
 The registry counts ratings. On Monad that count is self-produced:
 
