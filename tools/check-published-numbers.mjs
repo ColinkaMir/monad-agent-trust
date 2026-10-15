@@ -35,6 +35,7 @@ const live = await (async () => {
     ratedAgents: health.totals.ratedAgents,
     covered: health.totals.agentsCovered,
     independent: buckets.independent,
+    independentWallets: health.totals.independentWalletsNetworkWide,
     ownerFunded: buckets.ownerFunded,
     februaryShare: farm.februaryShare,
     threeDayShare: farm.busiestThreeDayShare,
@@ -65,10 +66,12 @@ const SUSPECTS = /\b(9,188|9188|1,206|10,24[0-9])\b/g;
 // TRUE against the live API, which is the failure that matters to a reader.
 const BOUNDS = [
   [/over (\d{1,3}(?:,\d{3})+)(?:\*\*)? ratings/g, (m) => live.ratings > Number(m[1].replace(/,/g, "")), "ratings"],
-  [/16 of over (\d{1,3}(?:,\d{3})+)/g, (m) => live.independent === 16 && live.ratings > Number(m[1].replace(/,/g, "")), "16 of over"],
+  [/(?<![\d,])(\d+) of over (\d{1,3}(?:,\d{3})+)(?! events)/g, (m) => live.independent === Number(m[1]) && live.ratings > Number(m[2].replace(/,/g, "")), "independent of over"],
+  [/(\d+) ratings from (\d+) (?:distinct )?wallets survive/g, (m) => live.independent === Number(m[1]) && live.independentWallets === Number(m[2]), "independent ratings"],
   [/about (\d{2})% of them from February/g, (m) => Math.abs(live.februaryShare * 100 - Number(m[1])) <= 0.5, "february share"],
   [/about (\d{2})% on three days/g, (m) => Math.abs(live.threeDayShare * 100 - Number(m[1])) <= 0.5, "three-day share"],
   [/about one in a hundred/g, () => Math.abs(live.ratedAgents / live.registrations - 0.01) <= 0.005, "rated share"],
+  [/fewer than two in a hundred/g, () => live.ratedAgents / live.registrations < 0.02, "rated share"],
 ];
 
 let bad = 0;

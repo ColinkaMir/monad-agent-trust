@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-10-12T05:45:01.325Z",
- "scanSeconds": 28.9,
- "ratings": 9309,
- "thirdParty": 206,
+ "generatedAt": "2026-10-15T05:46:01.810Z",
+ "scanSeconds": 118.3,
+ "ratings": 9412,
+ "thirdParty": 220,
  "ownerSent": 150,
  "agents": {
   "129": {
@@ -148,6 +148,42 @@
    "thirdParty": 1,
    "ownerSent": 1,
    "example": "0x6b8853f762a6b7b359782364ef473b9a37caf827e515146ef67362e2cd701c54"
+  },
+  "10388": {
+   "ratings": 7,
+   "thirdParty": 6,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10399": {
+   "ratings": 4,
+   "thirdParty": 3,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10401": {
+   "ratings": 2,
+   "thirdParty": 1,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10403": {
+   "ratings": 3,
+   "thirdParty": 2,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10407": {
+   "ratings": 1,
+   "thirdParty": 1,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10408": {
+   "ratings": 2,
+   "thirdParty": 1,
+   "ownerSent": 0,
+   "example": null
   }
  }
 }

@@ -28,7 +28,7 @@ What it does that the registry, and a funding trace on its own, cannot:
   EIP-3009 authorisations that the caller can revoke on chain.
 - **Answers programs, not only people.** HTTP, and MCP at a URL; another team's app (Sentinel) already
   calls it on its agent registration screen.
-- **Goes past the obvious farm.** After both filters, 16 ratings from 2 wallets survive network-wide;
+- **Goes past the obvious farm.** After both filters, 20 ratings from 3 wallets survive network-wide (16 from 2 when we submitted);
   150 ratings were sent by the rated agent's own owner through the rater's account; about three in
   four registered agents are one farm's raters.
 - **Says what would change each verdict**, with a stable `code` and the block it was read at, and
@@ -45,15 +45,18 @@ The registry counts ratings. On Monad that count is self-produced:
 
 - **over 10,000** agents registered (the count grows daily; `/api/health` has today's), about one in a
   hundred ever rated
-- **over 9,300** ratings in total, **about 97% of them from February 2026**, and **about 86% on three days of it**
+- **over 9,400** ratings in total, **about 96% of them from February 2026**, and **about 85% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
 - Every one of those 7,665 wallets also registered an agent of its own, so **about three in four
   registered agents are owned by wallets one owner funded to rate agent 182**. Ten ratings on them
   came from the owner of agent 10182, one of the agents in the 27 September ring
-- Ratings that survive both provenance filters, across the whole chain: **16 of over 9,300**. They come
-  from **2 wallets**, and one of those two produced 15 of the 16 by rating the same two agents over
-  and over. Buying the funding history of both leaves **one wallet** that nothing is known against
+- Ratings that survive both provenance filters, across the whole chain: **20 of over 9,400**, from
+  **3 wallets**. At submission (13 October) it was 16 from 2 wallets, one of which produced 15 of the
+  16 by rating the same two agents over and over, and buying the funding history of both left **one
+  wallet** that nothing is known against. The other four arrived that day on agent 10387, from a
+  wallet that paid the owner 6 MON eight seconds before the agent was registered; by the rule below
+  it counts, and nothing has been bought about it yet
 
 So this asks the two questions the registry cannot answer, and answers them in words rather than
 with a score out of a hundred, because a score invites exactly the mistake this exists to correct:
@@ -86,10 +89,10 @@ wallet that was paid to hold an opinion.
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
 | **Buy** | What Monad cannot show: who funded a rater *first, anywhere*, and whom an owner or a ring's funder paid on *any* chain. Bought from Nansen over x402, on Monad: $0.01 and $0.05 a call |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
-| **Show** | Every rating drawn one dot each, because the claim is a ratio of 16 to over 9,300 and a table reads that as "some good, some bad" |
+| **Show** | Every rating drawn one dot each, because the claim is a ratio of 20 to over 9,400 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
-with the sentence that justifies it. `not covered` is a real answer: about one in a hundred of more than
+with the sentence that justifies it. `not covered` is a real answer: fewer than two in a hundred of more than
 10,000 agents has ever been rated, so most questions have no evidence either way and saying so beats inventing a number.
 
 Every answer also says who **sent** the ratings. ERC-8004 records the rater, but when the rater is a
@@ -257,10 +260,10 @@ looks independent, and the answer came back split:
 A payment counts if it reached the agent's owner before the rating, even when it arrived before
 the agent itself was registered: on agents 145 and 146, 0.1 MON reached the owner two minutes before
 registration and the ratings followed eleven minutes later. Requiring the payment after
-registration would leave one paid rating instead of 16.
+registration would have left one paid rating instead of 16 at submission.
 
-So the free filters leave 16 ratings out of over 9,300, produced by 2 wallets across 3 agents, and
-after the purchase exactly one of those wallets has a provenance with nothing against it. The
+So at submission the free filters left 16 ratings out of over 9,300, produced by 2 wallets across 3
+agents, and after the purchase exactly one of those wallets had a provenance with nothing against it. The
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
 
@@ -392,8 +395,8 @@ measured coordinated reviewers at 73.5%, 59.2% and 90.6% on Ethereum, BSC and Ba
 directions of ours died on that same check before a line of code was written, which is what the
 check is for.
 
-Limits: provenance is computed for agents with at least five ratings (33 agents,
-9,210 of over 9,300 events); purchased corroboration is sampled, not exhaustive, because each lookup
+Limits: provenance is computed for agents with at least five ratings (36 agents
+on 15 October, 9,230 of over 9,400 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
 so even the one wallet left standing is an upper bound rather than a floor. That upper bound has
 already moved once: it was three before we bought the funding history, and buying it is what
