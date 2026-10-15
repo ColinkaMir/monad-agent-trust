@@ -232,16 +232,20 @@ pipelines are independent and agree on every covered agent, which is the only re
 `npm run check:hyperindex` compares owner, rating count and distinct raters agent by agent (33 of 33
 on 9 October).
 
-The HyperIndex runs on Envio's hosted service and anyone can query it, no key:
+The HyperIndex is public and needs no key:
 
 ```bash
-curl -s https://indexer.dev.hyperindex.xyz/6640c26/v1/graphql -H 'content-type: application/json' \
+curl -s https://prooflines.org/monad/agent-trust/graphql -H 'content-type: application/json' \
   -d '{"query":"{ Agent(where:{id:{_eq:\"182\"}}){ owner feedbackCount raterCount } }"}'
 # {"data":{"Agent":[{"owner":"0x97cd…0996","feedbackCount":7665,"raterCount":7665}]}}
 ```
 
-It deploys from the `envio` branch, so the daily data commits on `main` do not redeploy it. Its
-historical sync of both registries, 19,624 events, took about a minute.
+It first ran on Envio's hosted service (`indexer.dev.hyperindex.xyz/6640c26`, deployed 9 October
+from the `envio` branch; historical sync of 19,624 events in about a minute). The free development
+tier stopped it on 14 October and deleted it on 15 October, so the same indexer now runs on our
+server with `envio start`, behind a read-only GraphQL endpoint: Postgres and Hasura listen on
+localhost, the console is off, and nginx passes GraphQL only, as the public role. A fresh sync of
+both registries to the chain head took seconds.
 
 **Nansen.** Not a panel of their data; an input to a verdict. `/profiler/address/related-wallets`
 returns a First Funder edge and an entity label for a wallet, for $0.01, paid over x402 on Monad

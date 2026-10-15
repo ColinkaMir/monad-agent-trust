@@ -4,7 +4,7 @@
 // every covered agent; anything else is printed and the exit code is 1.
 import { readFileSync } from "node:fs";
 
-const ENDPOINT = process.env.HYPERINDEX_URL ?? "https://indexer.dev.hyperindex.xyz/6640c26/v1/graphql";
+const ENDPOINT = process.env.HYPERINDEX_URL ?? "https://prooflines.org/monad/agent-trust/graphql";
 const query = "{ Agent(where:{feedbackCount:{_gte:5}}, limit: 1000){ id owner feedbackCount raterCount } "
   + "chain_metadata { latest_processed_block num_events_processed } }";
 const res = await fetch(ENDPOINT, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query }) });

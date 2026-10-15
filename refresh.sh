@@ -27,8 +27,8 @@ node src/senders.mjs
 # which it is: the restart comes later in this script and the old process still answers.
 node src/counterparties.mjs
 
-# Сверка с HyperIndex на хостинге Envio. Не роняет обновление: это проверка, не шаг конвейера. Заодно
-# держит деплой живым: бесплатный тариф удаляет деплой, к которому 7 дней не было запросов.
+# Сверка с нашим HyperIndex (self-hosted с 15.10, когда бесплатный тариф Envio удалил деплой). Не роняет
+# обновление: это проверка, не шаг конвейера.
 node tools/check-hyperindex.mjs || echo "HyperIndex и HyperSync разошлись или HyperIndex недоступен"
 
 SRC=web/public/farm.json

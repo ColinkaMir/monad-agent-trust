@@ -6,8 +6,8 @@ The provenance pipeline in `../src` reads the same events through HyperSync dire
 also needs a second pass over the agent owners' transfer history, which an event indexer does not
 model. This covers the registry half properly and serves it over GraphQL.
 
-Hosted on Envio, public, no key: `https://indexer.dev.hyperindex.xyz/6640c26/v1/graphql`
-(deployed from the `envio` branch).
+Public, no key: `https://prooflines.org/monad/agent-trust/graphql` (self-hosted with `envio start`
+since 15 October, when Envio's free tier deleted the hosted deployment `indexer.dev.hyperindex.xyz/6640c26`).
 
 Run it yourself:
 
