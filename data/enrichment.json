@@ -21,7 +21,8 @@
   "0x76e9be89a3be6c1bf581a1f4519cb82dca9c57b3": null,
   "0x09c32b8fc0a94a1eed424499a42180e29667beee": null,
   "0xd5791860ca10a6f39749fb499931c79c7c35071a": null,
-  "0xc059b9cd5b7421a28f9259adb4511418fd548b5e": "0xd3868e1ed738ced6945a574a7c769433bed5d474"
+  "0xc059b9cd5b7421a28f9259adb4511418fd548b5e": "0xd3868e1ed738ced6945a574a7c769433bed5d474",
+  "0xab2dcc2cebcf22112e600df449afaae7c0dd60b0": null
  },
  "agents": {
   "4": {
@@ -105,6 +106,19 @@
     "0xdf747918e617c105acd245e6936a9d2e84d932bb": "​​🤖 Distributor [0xdf7479]"
    },
    "usdcSpent": 0.06
+  },
+  "10387": {
+   "checkedAt": "2026-10-17T07:08:34.490Z",
+   "ratersSampled": 1,
+   "withFirstFunder": 0,
+   "distinctFunders": 0,
+   "ownerFundedCount": 0,
+   "sharedFunder": null,
+   "sharedFunderCount": 0,
+   "sharedFunderLabel": null,
+   "sharedFunderIsOwner": false,
+   "funderLabels": {},
+   "usdcSpent": 0.01
   }
  },
  "labels": {

@@ -14,6 +14,9 @@ set -euo pipefail
 cd /home/solana/metropolis-agent-trust
 
 node src/index-erc8004.mjs
+# Первые деньги владельцев: платёж «оценщика», который был первыми деньгами владельца до регистрации
+# агента, — это снаряжение владельца, а не клиент (агенты 145, 146, 10387). Нужен до score.mjs.
+node src/owner-bootstrap.mjs
 node src/score.mjs
 node src/farm-map.mjs
 # Кто оплатил кольца: один запрос к HyperSync на кольцевого агента, их единицы. Шаг после

@@ -28,7 +28,7 @@ What it does that the registry, and a funding trace on its own, cannot:
   EIP-3009 authorisations that the caller can revoke on chain.
 - **Answers programs, not only people.** HTTP, and MCP at a URL; another team's app (Sentinel) already
   calls it on its agent registration screen.
-- **Goes past the obvious farm.** After both filters, 20 ratings from 3 wallets survive network-wide (16 from 2 when we submitted);
+- **Goes past the obvious farm.** After three questions, 1 rating from 1 wallet survives network-wide (16 from 2 when we submitted, under two);
   150 ratings were sent by the rated agent's own owner through the rater's account; about three in
   four registered agents are one farm's raters.
 - **Says what would change each verdict**, with a stable `code` and the block it was read at, and
@@ -51,12 +51,11 @@ The registry counts ratings. On Monad that count is self-produced:
 - Every one of those 7,665 wallets also registered an agent of its own, so **about three in four
   registered agents are owned by wallets one owner funded to rate agent 182**. Ten ratings on them
   came from the owner of agent 10182, one of the agents in the 27 September ring
-- Ratings that survive both provenance filters, across the whole chain: **20 of over 9,400**, from
-  **3 wallets**. At submission (13 October) it was 16 from 2 wallets, one of which produced 15 of the
-  16 by rating the same two agents over and over, and buying the funding history of both left **one
-  wallet** that nothing is known against. The other four arrived that day on agent 10387, from a
-  wallet that paid the owner 6 MON eight seconds before the agent was registered; by the rule below
-  it counts, and nothing has been bought about it yet
+- Ratings that survive across the whole chain: **1 of over 9,400**, from **1 wallet**. At submission
+  (13 October) two filters left 16 from 2 wallets. On 20 October a third question removed 15 of
+  those and four that had arrived since: the rater's payment was the owner's first money on Monad
+  and came minutes before the agent was registered, so the rater set the owner up rather than paid
+  for a service (agents 145, 146 and 10387; see below)
 
 So this asks the two questions the registry cannot answer, and answers them in words rather than
 with a score out of a hundred, because a score invites exactly the mistake this exists to correct:
@@ -89,7 +88,7 @@ wallet that was paid to hold an opinion.
 | **Compute** | Per agent: distinct raters, how many the owner funded, how many paid before rating, how many survive both filters |
 | **Buy** | What Monad cannot show: who funded a rater *first, anywhere*, and whom an owner or a ring's funder paid on *any* chain. Bought from Nansen over x402, on Monad: $0.01 and $0.05 a call |
 | **Serve** | HTTP, MCP tools, and a web page. Every answer carries what it cost and the transaction that paid for it |
-| **Show** | Every rating drawn one dot each, because the claim is a ratio of 20 to over 9,400 and a table reads that as "some good, some bad" |
+| **Show** | Every rating drawn one dot each, because the claim is a ratio of 1 to over 9,400 and a table reads that as "some good, some bad" |
 
 Verdicts are `farmed`, `single-source`, `ring`, `burst`, `partly-backed`, `thin`, or `not covered`, each
 with the sentence that justifies it. `not covered` is a real answer: fewer than two in a hundred of more than
@@ -259,17 +258,28 @@ looks independent, and the answer came back split:
 | Wallet | Rated | First funder | Verdict |
 |---|---|---|---|
 | `0x794c94f1` | agent 4 | `0xdf747918` | Nansen labels it **🤖 Distributor**, a wallet whose business is funding many wallets. Independent of *this* owner, not independent of everyone |
-| `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it |
+| `0x071a21c5` | agents 145 **and** 146 | `0x0311a7fd` | unlabelled, and neither owner. Nothing known against it at submission; since 20 October, see below |
 
-A payment counts if it reached the agent's owner before the rating, even when it arrived before
-the agent itself was registered: on agents 145 and 146, 0.1 MON reached the owner two minutes before
-registration and the ratings followed eleven minutes later. Requiring the payment after
-registration would have left one paid rating instead of 16 at submission.
+Until 20 October a payment counted if it reached the agent's owner before the rating, even when it
+arrived before the agent itself was registered. On agents 145 and 146, 0.1 MON reached each owner
+two minutes before registration and the ratings followed eleven minutes later. A new agent on
+13 October showed what that shape is: the rater's 6 MON was the owner's first money ever, the
+owner paid the registration gas with it eight seconds later, and four "paid" ratings followed in two
+minutes. Checking the owners' first money (`src/owner-bootstrap.mjs`, one HyperSync stream) found the
+same for 145 and 146. So a third question now applies: was the rater's payment the owner's first
+money on Monad, before the agent existed? If so the rater set the owner up, and its ratings count as
+neither independent nor customer ratings. Agent 4 keeps its one: that rater's money reached the
+owner three days after registration.
 
 So at submission the free filters left 16 ratings out of over 9,300, produced by 2 wallets across 3
 agents, and after the purchase exactly one of those wallets had a provenance with nothing against it. The
 label is what did that work: a shared funder means a farm when the funder is an ordinary wallet
 and means nothing when it is an exchange or a distributor, and Monad cannot tell you which it is.
+
+Since 20 October the third question removes `0x071a21c5` as well: its 0.1 MON to each owner was
+that owner's first money, two minutes before the agents were registered. What is left on the whole
+chain is `0x794c94f1` on agent 4, and the purchase above already says what it is: a Distributor,
+independent of this owner but not of everyone.
 
 The second purchase answers the question the first one cannot: not who funded a wallet first, but
 whom a wallet paid, on every chain Nansen covers. `/profiler/address/counterparties` costs $0.05,
@@ -403,8 +413,9 @@ Limits: provenance is computed for agents with at least five ratings (36 agents
 on 15 October, 9,230 of over 9,400 events); purchased corroboration is sampled, not exhaustive, because each lookup
 costs money; and a payment routed through a contract, a multisig or an exchange would not be seen,
 so even the one wallet left standing is an upper bound rather than a floor. That upper bound has
-already moved once: it was three before we bought the funding history, and buying it is what
-turned three ratings into two wallets into one.
+already moved twice: it was three before we bought the funding history, buying it turned three
+ratings into two wallets into one with nothing against it, and on 20 October the owners' first money
+removed that one too, leaving a single rating from a wallet Nansen labels a Distributor.
 
 ## License
 

@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-10-15T05:46:01.810Z",
- "scanSeconds": 118.3,
- "ratings": 9412,
- "thirdParty": 220,
+ "generatedAt": "2026-10-20T08:42:02.183Z",
+ "scanSeconds": 119.2,
+ "ratings": 9423,
+ "thirdParty": 226,
  "ownerSent": 150,
  "agents": {
   "129": {
@@ -162,8 +162,8 @@
    "example": null
   },
   "10401": {
-   "ratings": 2,
-   "thirdParty": 1,
+   "ratings": 6,
+   "thirdParty": 5,
    "ownerSent": 0,
    "example": null
   },
@@ -180,7 +180,13 @@
    "example": null
   },
   "10408": {
-   "ratings": 2,
+   "ratings": 3,
+   "thirdParty": 2,
+   "ownerSent": 0,
+   "example": null
+  },
+  "10415": {
+   "ratings": 1,
    "thirdParty": 1,
    "ownerSent": 0,
    "example": null

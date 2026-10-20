@@ -26,7 +26,7 @@ type Farm = {
 
 // Order matches farm-map.mjs. Independent is the only colour that carries light, because it is
 // the only category that represents somebody's own opinion.
-const COLOUR = ["#f0798f", "#f0c274", "#5ad1a5", "#39425e", "#232a3d"];
+const COLOUR = ["#f0798f", "#f0c274", "#5ad1a5", "#39425e", "#232a3d", "#b48cf2"];
 const PITCH = 5;      // one dot every 5 device-independent pixels
 const DOT = 3.4;
 
@@ -103,10 +103,12 @@ export function FarmMap() {
     <section className="farm">
       <h2>Every rating this registry has, one dot each</h2>
       <p className="farm-lead">
-        {farm.ratings.toLocaleString()} ratings across {farm.ratedAgents} agents. The green ones,
-        all {farm.totals[2]} of them, are the ratings left after asking whether the rater paid the
-        agent before rating it and whether the agent's owner had funded that rater first. They come
-        from {farm.independentWallets} wallets.
+        {farm.ratings.toLocaleString()} ratings across {farm.ratedAgents} agents.{" "}
+        {farm.totals[2] === 1 ? "The one green dot is the only rating" : `The ${farm.totals[2]} green ones are the ratings`}{" "}
+        left after three questions: did the rater pay the agent before rating it, had the owner funded
+        that rater, and was the rater's payment the owner's first money before the agent even existed
+        (the violet ones).{" "}
+        {farm.independentWallets === 1 ? "It comes from one wallet." : `They come from ${farm.independentWallets} wallets.`}
       </p>
 
       <div className="farm-box" ref={boxRef} onMouseLeave={() => setHover(null)}>

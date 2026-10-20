@@ -8,7 +8,8 @@
 //
 //   paid BEFORE rating    — a customer pays, then judges; a farm is paid to judge
 //   not funded by owner   — money that came from the agent's own owner proves nothing
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { bootstrappedOwner } from "./bootstrap.mjs";
 
 const idx = JSON.parse(readFileSync("data/indexed.json", "utf8"));
 // `${owner}|${wallet}` -> [ts, wei] of the first transfer in that direction. Older index files
@@ -18,6 +19,12 @@ const edge = (v) => (Array.isArray(v) ? v : v === undefined ? undefined : [v, nu
 const funded = new Map(idx.funded.map(([k, v]) => [k, edge(v)]));
 const paid = new Map(idx.paid.map(([k, v]) => [k, edge(v)]));
 const ownerOf = new Map(idx.registrations.map((r) => [r.agentId, r.owner]));
+const registeredAt = new Map(idx.registrations.map((r) => [r.agentId, r.ts]));
+// The owner's first money, from src/owner-bootstrap.mjs. A third question for a paying rater:
+// was that payment the owner being set up, before the agent existed? (2026-10-17, see there.)
+const firstIn = existsSync("data/owner-bootstrap.json")
+  ? JSON.parse(readFileSync("data/owner-bootstrap.json", "utf8")).owners ?? {}
+  : {};
 
 const byAgent = new Map();
 for (const f of idx.feedback) {
@@ -53,6 +60,9 @@ for (const [agentId, events] of byAgent) {
   // counts one wallet once per agent it rated, and on this chain that is not hypothetical: a
   // single wallet is the entire independent record of two different agents.
   const independentWallets = [];
+  // Raters that paid before rating and were never owner-funded, but whose payment was the owner's
+  // first money and came before the agent was registered: they set the owner up.
+  const bootstrapWallets = [];
   // The money side of the same loop, so the published MON totals can be recomputed from the
   // file rather than taken on faith, and so the round trip can be seen: out, rate, back.
   let weiOut = 0n, weiBack = 0n;
@@ -73,7 +83,11 @@ for (const [agentId, events] of byAgent) {
     }
     if (gotFromOwner !== undefined && sentToOwner !== undefined) fullCycle++;
     if (sentToOwner !== undefined && sentToOwner[0] < ratedAt && gotFromOwner === undefined) {
-      independentWallets.push(wallet);
+      if (bootstrappedOwner({ wallet, firstIn: firstIn[owner.toLowerCase()], registeredAt: registeredAt.get(agentId) })) {
+        bootstrapWallets.push(wallet);
+      } else {
+        independentWallets.push(wallet);
+      }
     }
   }
   const median = (a) => (a.length ? [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)] : null);
@@ -91,6 +105,7 @@ for (const [agentId, events] of byAgent) {
     busiestDayShare: +(Math.max(...days.values()) / events.length).toFixed(4),
     first: day(events[0].ts), last: day(events[events.length - 1].ts),
     selfRated, ownerFunded, fullCycle, paidBefore, paidAfter, independentPaid, independentWallets,
+    bootstrapPaid: bootstrapWallets.length, bootstrapWallets,
     // Доля оценивших, которые оценивали и других агентов, и сколько агентов они покрыли вместе.
     // Сигнал структурный, а не денежный: он виден там, где платежей нет и провенанс молчит.
     sharedRaters: [...firstRating.keys()].filter((w) => (agentsPerClient.get(w)?.size ?? 1) > 1).length,

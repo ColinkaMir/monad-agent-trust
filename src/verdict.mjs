@@ -163,11 +163,17 @@ export function verdict(a) {
   v.readAtBlock = registry().head ?? null;
   const o = a && ownerSent(a.agentId);
   const p = a && puppetOf(a.agentId);
+  // Raters that paid before rating but were the owner's first money, before the agent existed.
+  const boot = a?.bootstrapPaid
+    ? ` ${a.bootstrapPaid} rater${a.bootstrapPaid === 1 ? "" : "s"} paid the owner before rating, but `
+      + `that payment was the owner's first money on Monad and arrived before the agent was `
+      + `registered: the rater set the owner up, so it does not count as an independent customer.`
+    : "";
   return {
     ...v,
     ...(o && { ownerSentRatings: o.field }),
     ...(p && { ownerFundedToRate: p.field }),
-    why: v.why + (o ? o.sentence : "") + (p ? p.sentence : ""),
+    why: v.why + boot + (o ? o.sentence : "") + (p ? p.sentence : ""),
   };
 }
 

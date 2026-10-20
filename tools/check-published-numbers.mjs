@@ -67,7 +67,7 @@ const SUSPECTS = /\b(9,188|9188|1,206|10,24[0-9])\b/g;
 const BOUNDS = [
   [/over (\d{1,3}(?:,\d{3})+)(?:\*\*)? ratings/g, (m) => live.ratings > Number(m[1].replace(/,/g, "")), "ratings"],
   [/(?<![\d,])(\d+) of over (\d{1,3}(?:,\d{3})+)(?! events)/g, (m) => live.independent === Number(m[1]) && live.ratings > Number(m[2].replace(/,/g, "")), "independent of over"],
-  [/(\d+) ratings from (\d+) (?:distinct )?wallets survive/g, (m) => live.independent === Number(m[1]) && live.independentWallets === Number(m[2]), "independent ratings"],
+  [/(\d+) ratings? from (\d+) (?:distinct )?wallets? survives?/g, (m) => live.independent === Number(m[1]) && live.independentWallets === Number(m[2]), "independent ratings"],
   [/about (\d{2})% of them from February/g, (m) => Math.abs(live.februaryShare * 100 - Number(m[1])) <= 0.5, "february share"],
   [/about (\d{2})% on three days/g, (m) => Math.abs(live.threeDayShare * 100 - Number(m[1])) <= 0.5, "three-day share"],
   [/about one in a hundred/g, () => Math.abs(live.ratedAgents / live.registrations - 0.01) <= 0.005, "rated share"],

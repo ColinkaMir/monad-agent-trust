@@ -71,3 +71,30 @@ test("an unregistered agent is told apart from a registered one", () => {
   assert.equal(u.code, "NOT_REGISTERED");
   assert.match(u.why, /not registered/);
 });
+
+import { bootstrappedOwner } from "../src/bootstrap.mjs";
+
+test("a rater whose payment was the owner's first money before registration set the owner up", () => {
+  // Agent 10387's shape: 6 MON from the rater at 03:13:00, the owner's first money, eight
+  // seconds before the agent was registered at 03:13:08.
+  const firstIn = { at: 1_000, from: "0xab2d" };
+  assert.equal(bootstrappedOwner({ wallet: "0xAB2D", firstIn, registeredAt: 1_008 }), true);
+});
+
+test("the owner's first money after registration is not a set-up", () => {
+  // Agent 4's shape: the rater's first payment reached the owner three days after registration.
+  const firstIn = { at: 5_000, from: "0x794c" };
+  assert.equal(bootstrappedOwner({ wallet: "0x794c", firstIn, registeredAt: 1_000 }), false);
+});
+
+test("a rater who was not the owner's first money is not a set-up", () => {
+  const firstIn = { at: 900, from: "0xsomeoneelse" };
+  assert.equal(bootstrappedOwner({ wallet: "0xab2d", firstIn, registeredAt: 1_000 }), false);
+  assert.equal(bootstrappedOwner({ wallet: "0xab2d", firstIn: undefined, registeredAt: 1_000 }), false);
+});
+
+test("a verdict says when paying raters set the owner up", () => {
+  const v = verdict(agent({ raters: 1, feedback: 6, bootstrapPaid: 1 }));
+  assert.equal(v.verdict, "single-source");
+  assert.match(v.why, /owner's first money on Monad and arrived before the agent was registered/);
+});

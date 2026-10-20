@@ -10,7 +10,8 @@
 // registry's count, and the registry's count is exactly what is under examination here.
 //
 //   node src/farm-map.mjs   -> web/public/farm.json
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { bootstrappedOwner } from "./bootstrap.mjs";
 
 const idx = JSON.parse(readFileSync("data/indexed.json", "utf8"));
 const prov = JSON.parse(readFileSync("data/provenance.json", "utf8"));
@@ -19,6 +20,10 @@ const edge = (v) => (Array.isArray(v) ? v : v === undefined ? undefined : [v, nu
 const funded = new Map(idx.funded.map(([k, v]) => [k, edge(v)]));
 const paid = new Map(idx.paid.map(([k, v]) => [k, edge(v)]));
 const ownerOf = new Map(idx.registrations.map((r) => [r.agentId, r.owner]));
+const registeredAt = new Map(idx.registrations.map((r) => [r.agentId, r.ts]));
+const firstIn = existsSync("data/owner-bootstrap.json")
+  ? JSON.parse(readFileSync("data/owner-bootstrap.json", "utf8")).owners ?? {}
+  : {};
 
 // The four ways a rating can come to exist, ordered from "the owner produced it" to "nothing
 // about it is explained by money". `covered` marks the agents provenance was computed for; the
@@ -30,6 +35,8 @@ const BUCKETS = [
   { key: "independent", label: "rater paid the agent before rating, and the owner never funded it" },
   { key: "noMoney", label: "no payment in either direction" },
   { key: "notCovered", label: "agent has fewer than five ratings, so provenance was not computed" },
+  // Appended rather than inserted so the page's colours, which index this list, keep their order.
+  { key: "ownerSetUp", label: "rater paid before rating, but that was the owner's first money, before the agent existed" },
 ];
 const B = Object.fromEntries(BUCKETS.map((b, i) => [b.key, i]));
 
@@ -48,7 +55,10 @@ function bucketFor(agentId, wallet) {
   const sent = paid.get(`${wallet}|${owner}`);
   if (got !== undefined) return B.ownerFunded;
   if (sent === undefined) return B.noMoney;
-  return sent[0] < ratedAt ? B.independent : B.paidAfter;
+  if (sent[0] >= ratedAt) return B.paidAfter;
+  return bootstrappedOwner({ wallet, firstIn: firstIn[owner.toLowerCase()], registeredAt: registeredAt.get(agentId) })
+    ? B.ownerSetUp
+    : B.independent;
 }
 
 const byAgent = new Map();
