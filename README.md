@@ -45,7 +45,7 @@ The registry counts ratings. On Monad that count is self-produced:
 
 - **over 10,000** agents registered (the count grows daily; `/api/health` has today's), about one in a
   hundred ever rated
-- **over 9,400** ratings in total, **about 96% of them from February 2026**, and **about 85% on three days of it**
+- **over 9,400** ratings in total, **about 95% of them from February 2026**, and **about 85% on three days of it**
 - On the most-rated agent, **7,665 ratings from 7,665 wallets, every one of them funded by that
   agent's own owner** seconds before it rated
 - Every one of those 7,665 wallets also registered an agent of its own, so **about three in four
